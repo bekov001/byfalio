@@ -3,6 +3,7 @@ import { createContext, useState } from "react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import jwtInterceptor from "./jwtInterceptor";
+import { BACKEND_URL } from "../helpers";
 export const AuthContext = createContext();
  
 export const AuthContextProvider = ({ children }) => {
@@ -18,7 +19,7 @@ export const AuthContextProvider = ({ children }) => {
  
   const login = async (payload) => {
     const apiResponse = await axios.post(
-      "http://localhost:8000/api/login/",
+      BACKEND_URL + "/api/login/",
       payload
     );
     console.log(apiResponse.data);
@@ -35,7 +36,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const register = async (payload) => {
     const apiResponse = await axios.post(
-      "http://localhost:8000/api/register/",
+      BACKEND_URL + "/api/register/",
       payload
     ).then(response => {
       let loginData = {
@@ -63,7 +64,7 @@ export const AuthContextProvider = ({ children }) => {
     // invoke the logout API call, for our NestJS API no logout API
     const apiResponse = jwtInterceptor
     .post(
-      "http://localhost:8000/api/logout/",
+      BACKEND_URL + "/api/logout/",
       
         // localStorage.getItem("tokens")
       

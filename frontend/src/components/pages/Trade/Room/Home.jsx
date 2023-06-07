@@ -199,7 +199,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
       }
     console.log('pushed', payload)
       jwtInterceptor
-      .post("http://localhost:8000/exchange/open_order/", payload).then((response) =>
+      .post(BACKEND_URL + "/exchange/open_order/", payload).then((response) =>
           updatePos()
       )
       

@@ -88,4 +88,4 @@ function transformArray(arr) {
 
 
 
-  export const BACKEND_URL = "https://byfalio.herokuapp.com/";
+  export const BACKEND_URL = "https://byfalio.herokuapp.com";
