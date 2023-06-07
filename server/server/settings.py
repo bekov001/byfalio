@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'exchange',
     'authorization.apps.AuthorizationConfig',
 'corsheaders',
+    "whitenoise.runserver_nostatic",
 
 ]
 
@@ -155,6 +156,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
+}
+
+
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
 }
 
 AUTH_USER_MODEL = 'authorization.User'
