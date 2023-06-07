@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'exchange',
     'authorization.apps.AuthorizationConfig',
 'corsheaders',
-    "whitenoise.runserver_nostatic",
+    # "whitenoise.runserver_nostatic",
 
 ]
 
