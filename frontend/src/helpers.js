@@ -85,3 +85,7 @@ function transformArray(arr) {
   export const formatNumber = (arg) => {
     return new Intl.NumberFormat('en-US').format(arg);
   };
+
+
+
+  export const BACKEND_URL = "";
