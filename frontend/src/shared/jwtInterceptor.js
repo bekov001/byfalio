@@ -22,7 +22,7 @@ export const jwtInterceptor = axios.create();
 // }
  
 jwtInterceptor.interceptors.request.use((config) => {
-  console.log(config);
+  // console.log(config);
 let tokensData = JSON.parse(localStorage.getItem("tokens"));
   config.headers["Authorization"] = `Bearer ${tokensData.access_token}`;
  return config;
@@ -54,7 +54,7 @@ let tokensData = JSON.parse(localStorage.getItem("tokens"));
         ));
       error.config.headers[
         "Authorization"
-      ] = `bearer ${apiResponse.data.access}`;
+      ] = `bearer ${apiResponse.data["access"]}`;
       return axios(error.config);
     } else {
       return Promise.reject(error);

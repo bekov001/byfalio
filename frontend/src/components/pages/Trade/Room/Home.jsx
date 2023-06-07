@@ -77,8 +77,8 @@ function checkLimit(limits, indexPrice, openPos){
 }
 function Home() {
   const [socketUrl, setSocketUrl] = useState("wss://fstream.binance.com:443/stream?streams=");
-  const [indexPrice, setIndexPrice] = useState(27000);
-  const [markPrice, setMarkPrice] = useState(27000);
+  const [indexPrice, setIndexPrice] = useState('--');
+  const [markPrice, setMarkPrice] = useState('--');
   const [flagStateLong, setFlagStateLong] = useState(true);
   const [depth, setDepth] = useState({asks: [], bids: []});
   const [kline, setKline] = useState([]);
@@ -164,9 +164,9 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
       // }, 100);
       
       // getTickerData(setTickerData)
-    let interval24 = setInterval(() => {
-      (checkLimit(limitOrders, indexPrice, openPos))
-     }, 1000);
+    // let interval24 = setInterval(() => {
+    //   (checkLimit(limitOrders, indexPrice, openPos))
+    //  }, 1000);
 
       // getFundingRate(setFundingRate)
       // let interval1 = setInterval(() => {
@@ -189,6 +189,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
     // };
 
   function openPos(newPos) {
+    if (indexPrice != "--") {
       const payload = {
         type_of_pos: newPos.type_of_pos,
         leverage: newPos.leverage,
@@ -198,8 +199,12 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
       }
     console.log('pushed', payload)
       jwtInterceptor
-      .post("http://localhost:8000/exchange/open_order/", payload)
-      updatePos()
+      .post("http://localhost:8000/exchange/open_order/", payload).then((response) =>
+          updatePos()
+      )
+      
+    }
+      
   }
 
   
@@ -231,6 +236,19 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
   }
 
 
+  function deletePos(id){
+    jwtInterceptor
+    .post("http://localhost:8000/exchange/order/" + id)
+      .then((response) => {
+        // // console.log(response.data);
+        // setMyPos(response.data);
+        console.log(response);
+        updatePos()
+      });
+  }
+
+
+
   return (
    
     <div className="wrap">
@@ -248,7 +266,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
             </div>
       
         </div>
-        <Positions tokenPrice={indexPrice} pos={myPos}></Positions>
+        <Positions deletePos={deletePos} tokenPrice={indexPrice} pos={myPos}></Positions>
     </div>
   );
 

@@ -3,11 +3,12 @@ from django.shortcuts import render
 
 # Create your views here.
 # from django.shortcuts import render
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.views import APIView
 
 from .models import Order
 
@@ -70,6 +71,37 @@ class OrderCreate(CreateAPIView):
         serializer.save(owner=self.request.user)
 
 
+# class OrderDelete(APIView):
+#    queryset = Order.objects.all()
+#    serializer_class = OrderSerializer
+#    # permission_classes = [IsAuthenticated]
+#    permission_classes = [IsAuthenticated]
+#
+#    def delete(self, request, id, format=None):
+#        # snippet = self.get_object(pk)
+#        # snippet.delete()
+#        # return Response(status=status.HTTP_204_NO_CONTENT)
+#         print(id, request.user.username)
+#         order = Order.objects.get(id=id, username=request.user.username)
+#         order.is_active = False
+#         order
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(["post"])
+@permission_classes((IsAuthenticated,))
+def close_order(request, id):
+    try:
+        order = Order.objects.get(id=id, owner=request.user.id)
+        if order:
+            order.is_active = False
+            order.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'error': "not found"})
+    except Exception as e:
+        return Response({"error": str(e)})
+
+
 class OrderList(ListAPIView):
     # from django.contrib.auth import get_user_model
     # User = get_user_model()
@@ -82,4 +114,4 @@ class OrderList(ListAPIView):
         for the currently authenticated user.
         """
         user = self.request.user
-        return Order.objects.filter(owner=user)
+        return Order.objects.filter(owner=user.id)

@@ -45,6 +45,7 @@ function Main({openPos, balance, openLimitPos, indexPrice}){
       
       }
     function openLong(event){
+        // if limitPrice !
         if (tabActive == 2){
             // console.log(limitPrice)
             const position = {
