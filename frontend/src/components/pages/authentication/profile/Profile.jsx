@@ -8,6 +8,7 @@ import Header from '../../../layouts/Trade/Header/Header';
 import AuthContext from '../../../../shared/AuthContext';
 import jwtInterceptor from '../../../../shared/jwtInterceptor';
 import { useState } from 'react';
+import { BACKEND_URL } from '../../../../helpers';
 
 export default function Profile() {
   const {logout}= useContext(AuthContext)
@@ -23,7 +24,7 @@ export default function Profile() {
     //   });
 
       jwtInterceptor
-      .get("http://localhost:8000/api/detail")
+      .get(BACKEND_URL + "/api/detail")
       .then((response) => {
         // setUsers(response.data);
         setUsername(response.data.username)

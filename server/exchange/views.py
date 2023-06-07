@@ -1,4 +1,3 @@
-from Demos.FileSecurityTest import permissions
 from django.shortcuts import render
 
 # Create your views here.

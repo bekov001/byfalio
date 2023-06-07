@@ -6,7 +6,7 @@ import TokenChart from './TokenChart/Main';
 import TokenOrders from './TokenOrders';
 import TokenBuy from './TokenBuy/Main';
 import useWebSocket from 'react-use-websocket';
-import { groupByTicketSize, addTotalSums, addDepths, getMaxTotalSum} from '../../../../helpers';
+import { groupByTicketSize, addTotalSums, addDepths, getMaxTotalSum, BACKEND_URL} from '../../../../helpers';
 import axios from 'axios';
 import Positions from './Positions';
 import jwtInterceptor from '../../../../shared/jwtInterceptor';
@@ -227,7 +227,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
 
   function updatePos(){
     jwtInterceptor
-    .get("http://localhost:8000/exchange/orders/")
+    .get(BACKEND_URL + "/exchange/orders/")
       .then((response) => {
         // console.log(response.data);
         setMyPos(response.data);
@@ -238,7 +238,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
 
   function deletePos(id){
     jwtInterceptor
-    .post("http://localhost:8000/exchange/order/" + id)
+    .post(BACKEND_URL + "/exchange/order/" + id)
       .then((response) => {
         // // console.log(response.data);
         // setMyPos(response.data);

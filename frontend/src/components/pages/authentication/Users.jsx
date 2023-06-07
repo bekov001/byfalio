@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import {  jwtInterceptor } from '../../../shared/jwtInterceptor'
 import axios from 'axios'
+import { BACKEND_URL } from '../../../helpers';
 
 export default function Users() {
     const [users, setUsers] = useState([])
@@ -10,7 +11,7 @@ export default function Users() {
     //   });
 
       jwtInterceptor
-      .post("http://localhost:8000/exchange/orders/", {
+      .post(BACKEND_URL + "/exchange/orders/", {
           ticker: "TESTUSDT",
           quantity_usdt: 100,
      
