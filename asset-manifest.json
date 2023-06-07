@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/byfalio/static/css/main.007a1aa7.css",
-    "main.js": "/byfalio/static/js/main.00db3a1f.js",
+    "main.js": "/byfalio/static/js/main.cba701bf.js",
     "static/js/787.a3355d21.chunk.js": "/byfalio/static/js/787.a3355d21.chunk.js",
     "static/media/slick.svg": "/byfalio/static/media/slick.2630a3e3eab21c607e21.svg",
     "static/media/slick.eot": "/byfalio/static/media/slick.a4e97f5a2a64f0ab1323.eot",
@@ -11,11 +11,11 @@
     "static/media/slider-arrow-left.svg": "/byfalio/static/media/slider-arrow-left.3d1034d78be531be0d20.svg",
     "static/media/slider-arrow-right.svg": "/byfalio/static/media/slider-arrow-right.36da1573fe69c49774fd.svg",
     "main.007a1aa7.css.map": "/byfalio/static/css/main.007a1aa7.css.map",
-    "main.00db3a1f.js.map": "/byfalio/static/js/main.00db3a1f.js.map",
+    "main.cba701bf.js.map": "/byfalio/static/js/main.cba701bf.js.map",
     "787.a3355d21.chunk.js.map": "/byfalio/static/js/787.a3355d21.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.007a1aa7.css",
-    "static/js/main.00db3a1f.js"
+    "static/js/main.cba701bf.js"
   ]
 }
