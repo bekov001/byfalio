@@ -3,7 +3,7 @@ import ClosedOrders from "./ClosedOrders";
 import ActiveOrders from './ActiveOrders';
 
 
-function Home({tradeHistoryShow,handleTradeHistoryClose}){
+function Home({tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
 
     const [tradeHistoryActiveOrdersShow, setTradeHistoryActiveOrdersShow] = useState(false);
     const [tradeHistoryClosedShow, setTradeHistoryClosedShow] = useState(true);
@@ -16,7 +16,7 @@ function Home({tradeHistoryShow,handleTradeHistoryClose}){
         setTradeHistoryActiveOrdersShow(false);
         setTradeHistoryClosedShow(true);
     }
-
+    console.log(pos);
     return (
         <div className={tradeHistoryShow ? "sidebar_menu_main " : "sidebar_menu_main hidden"} >
 
@@ -36,7 +36,7 @@ function Home({tradeHistoryShow,handleTradeHistoryClose}){
 
                 <ClosedOrders tradeHistoryClosedShow={tradeHistoryClosedShow}></ClosedOrders>
 
-                <ActiveOrders tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
+                <ActiveOrders tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
 
             </div>
         </div>

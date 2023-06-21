@@ -4,8 +4,9 @@ function TokenOrders(props){
     const [viewType, setViewType] = useState(1);
     const [selectStepShow, setSelectStepShow] = useState(false);
     const handleSelectStepToggle = () => setSelectStepShow(!selectStepShow);
-    const [selectStepVal, setSelectStepVal] = useState("0,001");
-    const {tokenMarkPrice, tokenIndexPrice, flagStateLong, depth} = props;
+    // // const [selectStepVal, setSelectStepVal] = useState("10");
+    const {tokenMarkPrice, tokenIndexPrice, flagStateLong, depth, setStepVal, stepVal} = props;
+    const tokenName = "BTC";
     return (
         <div className="token_orders">
         <div className="token_orders_title">
@@ -38,18 +39,18 @@ function TokenOrders(props){
             </div>
         <div className="token_orders_view_count_w">
            <div onClick={handleSelectStepToggle} className="token_orders_view_count border_gradient">
-                <span>{selectStepVal}</span>
+                <span>{stepVal}</span>
                 <img src="img/select2.svg" alt=""/>
             </div> 
             <div onClick={handleSelectStepToggle} className={selectStepShow ? "token_orders_view_count_list " : "token_orders_view_count_list hidden"}>
-                <div className="token_orders_view_count_list_item" onClick={() => setSelectStepVal("0.1")}>
-                    0.1
+                <div className="token_orders_view_count_list_item" onClick={() => setStepVal("1")}>
+                    1
                 </div>
-                <div className="token_orders_view_count_list_item" onClick={() => setSelectStepVal("0.01")}>
-                    0.01
+                <div className="token_orders_view_count_list_item" onClick={() => setStepVal("10")}>
+                    10
                 </div>
-                <div className="token_orders_view_count_list_item" onClick={() => setSelectStepVal("0.001")} >
-                    0.001
+                <div className="token_orders_view_count_list_item" onClick={() => setStepVal("50")} >
+                    50
                 </div>
             </div>
             </div>
@@ -60,16 +61,15 @@ function TokenOrders(props){
                     Цена(USDT)
                 </div>
                 <div className="token_orders_sell_title_quantity">
-                    Размер(CTK)
+                    Размер({tokenName})
                 </div>
                 <div className="token_orders_sell_title_total">
-                    Сумма(CTK)
+                    Сумма({tokenName})
                 </div>
             </div>
             <div className="token_orders_sell_main">
                 {
-                            depth.asks.map((order) =>
-                            <div style={{background: 'linear-gradient(90deg, rgba(28,30,34, 1) ' + (100 - order[3]) + '%, rgba(69,41,44, 1) 1%)'}} className="row" key={order[0]}>
+                            depth.asks.map((order) => parseFloat(order[1]) > 0 ? <div style={{background: 'linear-gradient(90deg, rgba(28,30,34, 1) ' + (100 - order[3]) + '%, rgba(69,41,44, 1) 1%)'}} className="row" key={order[0]}>
                                 <div className="token_orders_sell_price">
                                     {parseFloat(order[0]).toFixed(2)}
                                 </ div>
@@ -80,7 +80,9 @@ function TokenOrders(props){
                                 <div className="token_orders_sell_total">
                         {order[2]}
                     </div>
-                            </div>
+                            </div> : <div></div>
+                            
+                           
                             )
                     
                         }
@@ -111,7 +113,7 @@ function TokenOrders(props){
         </div>
         <div className="token_orders_buy_main">
         {
-                            depth.bids.map((order) =>
+                            depth.bids.map((order) => parseFloat(order[3]) > 0 ?
                             <div style={{background: 'linear-gradient(90deg, rgba(28,30,34, 0.01) ' + (100 - order[3]) + '%, rgba(30,63,50, 1) 1%)'}} className="row" key={order[0]}>
                                 <div className="token_orders_buy_price">
                                     {parseFloat(order[0]).toFixed(2)}
@@ -123,7 +125,7 @@ function TokenOrders(props){
                                 <div className="token_orders_buy_total">
                         {order[2]}
                     </div>
-                            </div>
+                            </div> : <div></div>
                             )
                     
                         }

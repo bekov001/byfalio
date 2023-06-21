@@ -78,8 +78,12 @@ function transformArray(arr) {
   }
   
 
-  export const groupByTicketSize = (levels, ticketSize) => {
-    return transformArray(levels.map(level => [roundToNearest((level[0]), ticketSize), (level[1])]));
+  export const groupByTicketSizeAsks = (levels, ticketSize, value) => {
+    return group(transformArray(levels.map(level => [roundToNearest((level[0]), ticketSize), (level[1])])), "asks", value);
+  };
+
+  export const groupByTicketSizeBids = (levels, ticketSize, value) => {
+    return group((levels.map(level => [roundToNearest((level[0]), ticketSize), (level[1])])), "bids", value);
   };
   
   export const formatNumber = (arg) => {
@@ -87,5 +91,48 @@ function transformArray(arr) {
   };
 
 
+  const group = (data, type, value) => {
+      const level = parseFloat(value);
+      const countOfLevels = 10;
+      data.sort((a, b) => parseFloat(a) - parseFloat(b));
+      let first =  Math.floor(data[0][0] / level) * level + level
+      let last = first + (countOfLevels - 1) * level
+      if (type === "bids"){
+         last =  Math.floor(data.at(-1)[0] / level) * level + level
+         first = last - (countOfLevels) * level
+      }
+      
+      
+      const src = {
+      }
 
-  export const BACKEND_URL = "https://byfalio.herokuapp.com";
+      for (var i = 0; i < countOfLevels; ++i) {
+        src[first + i * level] = [];
+    }
+    data.forEach(element => 
+      {
+        if (element[0] < first){
+          src[first].push((element[1]))
+        } else if (element[0] > last) {
+          src[last].push((element[1]))
+        } else {
+          src[Math.floor(element[0] / level) * level].push(element[1])
+        }
+      });
+      
+
+
+
+    let newData = [];
+
+    for (const [key, value] of Object.entries(src)) {
+      newData.push([key, value.reduce(function(a, b){
+        return a + b;
+      }, 0.1)])
+    }
+      return newData;
+  }
+
+
+  // export const BACKEND_URL = "https://byfalio.herokuapp.com";
+  export const BACKEND_URL = "http://127.0.0.1:8000";

@@ -5,7 +5,7 @@ import CandleStickChart from './CandleStickChart';
 function Original({kline, newData}){
   return ( <div className='trading_original'>
     
-  {kline ? <CandleStickChart data={kline} newData={newData} /> : "Loading"}
+  {kline ? <CandleStickChart data={kline} newData={newData} /> : <p>"Loading"</p>}
   </div>
   )
 }

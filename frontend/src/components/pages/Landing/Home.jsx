@@ -24,9 +24,9 @@ function Home() {
                 <Link to="/login"><div className="landing_header_sign border_gradient2">
                    Войти
                 </div></Link>
-                <div className="landing_header_register">
+                <Link to="/register"><div className="landing_header_register">
                   Регистрация
-                </div>
+                </div></Link>
                 <div className="landing_header_lang">
                   <div className="landing_header_lang_active">
                     <span>RU</span>

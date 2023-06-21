@@ -4,7 +4,7 @@ import LeadersTable from "../../pages/Trade/LeadersTable/LeadersTable";
 
 import React, { useState} from 'react';
 import { Link } from "react-router-dom";
-function Sidebar(){
+function Sidebar({active_pos, tokenPrice}){
 
     const [menuLinkId, setMenuLinkId] = useState(4); 
     const hideAll = () => {
@@ -16,10 +16,10 @@ function Sidebar(){
     const [tradeHistoryShow, setTradeHistoryShow] = useState(false);
 
     const handleTradeHistoryShow = (e) => {
-        // hideAll();
+        hideAll();
          e.preventDefault();
-        // setMenuLinkId(2);
-        // setTradeHistoryShow(true);
+        setMenuLinkId(2);
+        setTradeHistoryShow(true);
     }
 
     const handleTradeHistoryClose = () => {
@@ -30,10 +30,10 @@ function Sidebar(){
     const [newsShow, setNewsShow] = useState(false);
 
     const handleNewsShow = (e) => {
-        // hideAll();
+     hideAll();
         e.preventDefault();
-        // setMenuLinkId(3);
-        // setNewsShow(true);
+         setMenuLinkId(3);
+        setNewsShow(true);
     }
 
     const handleNewsClose = () => {
@@ -42,14 +42,14 @@ function Sidebar(){
     }
 
     const handleProfile= (e) => {
-        hideAll();
-        e.preventDefault();
-        setMenuLinkId(1);
+    //     hideAll();
+    //     e.preventDefault();
+    //  setMenuLinkId(1);
     }
 
 
     const handleTradeRoomShow = (e) => {
-        // hideAll();
+        hideAll();
         e.preventDefault();
         setMenuLinkId(4);
     }
@@ -59,8 +59,8 @@ function Sidebar(){
     const handleLeadersShow = (e) => {
         hideAll();
         e.preventDefault();
-        // setMenuLinkId(5);
-        // setLeadersShow(true);
+        setMenuLinkId(5);
+        setLeadersShow(true);
     }
 
     const handleLeadersClose = () => {
@@ -68,18 +68,16 @@ function Sidebar(){
         setMenuLinkId(4);
     }
 
-
+    console.log(active_pos);
     return (
         <div className={menuLinkId!=4 ? "sidebar_menu sidebar_menu_active" : "sidebar_menu"} >
         <div className="sidebar_menu_links">
-        {menuLinkId!=4 ? <div className='trade_modal_filter'></div> : ""}   
+        {menuLinkId!=4 ? <div className='trade_modal_filter' ></div> : ""}   
             <div className="sidebar_menu_link tables_hidden">
-                <a href="" onClick={handleProfile}>
-                    <Link to='/profile'>
+                    <Link to='/profile' onClick={handleProfile}>
                     <img src={menuLinkId==1 ? "img/sidebar/link1_active.svg" : "img/sidebar/link1.svg"} alt="" />
                     <span>Профиль</span>
                     </Link>
-                </a>
             </div>
             <div className={menuLinkId==2 ? "sidebar_menu_link menu_link_active" : "sidebar_menu_link"}>
                 <div className="border_active"></div>
@@ -118,7 +116,7 @@ function Sidebar(){
                 </a>
             </div>
         </div>
-            <TradeHistory tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
+            <TradeHistory tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
             <News newsShow={newsShow} handleNewsClose={handleNewsClose}></News>
             <LeadersTable leadersShow={leadersShow} handleLeadersClose={handleLeadersClose} ></LeadersTable>
     </div>

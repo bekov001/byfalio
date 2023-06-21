@@ -2,7 +2,7 @@ import React, { useState} from 'react';
 import Original from './Original';
 import TradingView from './TradingView';
 
-function Main({kline, newData}){
+function Main({kline, newData, lowPrice, highPrice}){
   const [chartType, setChartType] = useState(1); 
   const [chartTimeline, setChartTimeline] = useState(3); 
     return (
@@ -33,8 +33,8 @@ function Main({kline, newData}){
                     <span>04-29</span>
                     <span>23:00</span>
                     <span>Открытые: 29,337.5</span>
-                    <span>Макс: 29,337.5</span>
-                    <span>Мин: 29,337.5</span>
+                    <span>Макс: {highPrice}</span>
+                    <span>Мин: {lowPrice}</span>
                 </div>
             </div>
             <div className="token_chart_header_btns">

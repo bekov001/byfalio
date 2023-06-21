@@ -32,20 +32,20 @@ def price(request):
     return render(request, "exchange/dubai.html")
 
 
-
-
 @api_view(('GET',))
 @permission_classes((AllowAny,))
 def history(request, pair, time):
-    import logging
-    from binance.cm_futures import CMFutures
-    from binance.lib.utils import config_logging
+    from binance.client import Client
+    from binance.enums import HistoricalKlinesType
 
-    config_logging(logging, logging.DEBUG)
+    client = Client()
 
-    cm_futures_client = CMFutures()
-    get_request = (cm_futures_client.klines(pair[:-1] + "_PERP", time,
-                                               **{"limit": 999}))
+    get_request = client.get_historical_klines("BTCUSDT",
+                                          Client.KLINE_INTERVAL_1HOUR,
+                                          "1 Jan, 2023", klines_type=HistoricalKlinesType.FUTURES)
+  
+    # get_request = (cm_futures_client.index_price_klines(pair[:-1], time,
+    #                                            **{"limit": 999}))
     src = []
     for data in get_request:
         src.append(
@@ -58,6 +58,33 @@ def history(request, pair, time):
             }
         )
     return Response({'data': src})
+    # return render(request, "exchange/dubai.html")
+
+
+# @api_view(('GET',))
+# @permission_classes((AllowAny,))
+# def history(request, pair, time):
+#     import logging
+#     from binance.cm_futures import CMFutures
+#     from binance.lib.utils import config_logging
+#
+#     config_logging(logging, logging.DEBUG)
+#
+#     cm_futures_client = CMFutures()
+#     get_request = (cm_futures_client.index_price_klines(pair[:-1], time,
+#                                                **{"limit": 999}))
+#     src = []
+#     for data in get_request:
+#         src.append(
+#             {
+#                 "time": data[0] / 1000,
+#                 "open": data[1],
+#                 "high": data[2],
+#                 "low": data[3],
+#                 "close": data[4]
+#             }
+#         )
+#     return Response({'data': src})
     # return render(request, "exchange/dubai.html")
 
 

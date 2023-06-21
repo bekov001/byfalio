@@ -888,7 +888,7 @@ function Pnl({pnlShow,setPnlShow}){
 
                         <div className="trade_pnl_modal_main_info_change_text">
                             <span>Измените текст</span>
-                            <textarea className='border_gradient' name="" id="" cols="30" rows="10" value="Присоединяйтесь к ByFalio вместе со мной 
+                            <textarea className='border_gradient' name="" id="" cols="30" rows="10" defaultValue="Присоединяйтесь к ByFalio вместе со мной 
 и получайте бонус на $5000!"></textarea>
                         </div>
                         <div className="trade_pnl_modal_main_info_btns">

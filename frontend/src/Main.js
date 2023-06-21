@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { BrowserRouter as Router, Routes, Route}
+import { BrowserRouter as Router, Routes, Route, HashRouter}
     from 'react-router-dom';
 import TradeRoom from './components/pages/Trade/Room/Home';
 import Modals from './components/pages/Modals';

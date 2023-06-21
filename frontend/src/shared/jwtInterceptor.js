@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BACKEND_URL } from "../helpers";
  
 export const jwtInterceptor = axios.create();
 
@@ -42,7 +43,7 @@ let tokensData = JSON.parse(localStorage.getItem("tokens"));
       };
       
       let apiResponse = await axios.post(
-        "http://localhost:8000/api/refresh/",
+        BACKEND_URL + "/api/refresh/",
         payload
       );
       // console.log(apiResponse)

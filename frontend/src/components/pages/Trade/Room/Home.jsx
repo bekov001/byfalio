@@ -6,7 +6,7 @@ import TokenChart from './TokenChart/Main';
 import TokenOrders from './TokenOrders';
 import TokenBuy from './TokenBuy/Main';
 import useWebSocket from 'react-use-websocket';
-import { groupByTicketSize, addTotalSums, addDepths, getMaxTotalSum, BACKEND_URL} from '../../../../helpers';
+import { groupByTicketSize, addTotalSums, addDepths, getMaxTotalSum, BACKEND_URL, groupByTicketSizeAsks, groupByTicketSizeBids} from '../../../../helpers';
 import axios from 'axios';
 import Positions from './Positions';
 import jwtInterceptor from '../../../../shared/jwtInterceptor';
@@ -17,9 +17,17 @@ function processKline(kline){
 }
 
 function getKlines(setKlines){
-  const apiUrl = 'http://127.0.0.1:8000/exchange/history/btcusdt/1h/';
+  const apiUrl = BACKEND_URL + '/exchange/history/btcusdt/1h/';
     axios.get(apiUrl).then((resp) => {
-      setKlines(resp.data.data)
+      setKlines(resp.data.data.map((element) => {
+        return {
+          close: parseFloat(element.close),
+          high: parseFloat(element.high),
+          low: parseFloat(element.low),
+          open: parseFloat(element.open),
+          time: element.time
+        }
+      }))
             // let markPrice = parseFloat(resp.data.markPrice).toFixed(2);
             // // console.log(price)
             // setMarkTokenPrice(markPrice);
@@ -31,6 +39,7 @@ function getKlines(setKlines){
 }
 function processDepth(depth){
   depth.asks = addTotalSums(depth.asks.map((each_el) => {
+  
     return [Number(each_el[0]), Number(each_el[1])]
   })).reverse().map((each_el) => {
       return [Number(each_el[0]), Number(each_el[1]), parseFloat(Number(each_el[2]).toFixed(3))]
@@ -88,13 +97,16 @@ function Home() {
   const [balance, setBalance] = useState(100);
   const [limitOrders, setLimitOrders] = useState([]);
   const [worked, setWorked] = useState([]);
-  
+  const [stepVal, setStepVal] = useState("10");
+  const [highPrice, setHighPrice] = useState('--');
+  const [lowPrice, setLowPrice] = useState('--');
+
 // useWebSocket(WS_URL + "btcusdt@depth", {
 //  onOpen: () => {
 //     console.log('WebSocket connection established.');
 //    }
 //  }); 
-useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500ms/btcusdt@kline_1h", {
+useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/btcusdt@kline_1h", {
     onOpen: () => {
       
        console.log('WebSocket connection established.');
@@ -109,33 +121,43 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
     const processMessages = (event) => {
       const response = JSON.parse(event.data)['data'];
       if (response.e === "24hrTicker") {
-      // console.log(response);
+      
       const data = parseFloat(response.c).toFixed(2);
       if (data > indexPrice){
           setFlagStateLong(true);
       } else if (data < indexPrice) {
         setFlagStateLong(false);
       }
+                
        setIndexPrice(data)
       }
-       else if (response.e === 'markPriceUpdate') {
-        setMarkPrice(parseFloat(response.p).toFixed(2))
+       else if (response[0] && response[0].e === 'markPriceUpdate') {
+         console.log(response);
+        const mark_price = response.find(item => item.s === "BTCUSDT")
+        console.log(mark_price)
+        setMarkPrice(parseFloat(mark_price.p).toFixed(2))
        } else if (response.e === "depthUpdate") {
         setDepth(processDepth(
-          {asks: (groupByTicketSize(response.a.sort((a, b) => a[0] - b[0]).map(data => 
-          [parseFloat(data[0]), parseFloat(data[1])]), 1)),
-        bids: (groupByTicketSize(response.b.sort((a, b) => a[0] - b[0]).map(data => 
-          [parseFloat(data[0]), parseFloat(data[1])]), 1))}))
+          {asks: (groupByTicketSizeAsks(response.a.sort((a, b) => a[0] - b[0]).map(data => 
+          [parseFloat(data[0]), parseFloat(data[1])]), 1, stepVal)),
+        bids: (groupByTicketSizeBids(response.b.sort((a, b) => a[0] - b[0]).map(data => 
+          [parseFloat(data[0]), parseFloat(data[1])]), 1, stepVal))}))
           // setDepth();
        }  else if (response.e === "kline") {
         const candlestick = response.k;
         const new_data = {
-          time: candlestick.t / 1000,
-          open: candlestick.o,
-          high: candlestick.h,
-          low: candlestick.l,
-          close: candlestick.c
+          time: (candlestick.t) / 1000,
+          open: parseFloat(candlestick.o),
+          high: parseFloat(candlestick.h),
+          low: parseFloat(candlestick.l),
+          close: parseFloat(candlestick.c)
         }
+        const high_price = parseFloat(new_data.high).toFixed(2);
+        const low_price = parseFloat(new_data.low).toFixed(2);
+        setHighPrice(high_price);
+        setLowPrice(low_price);
+        console.log(new_data)
+        setLastCandlestick(new_data);
         // console.log(new_data);
       
         // setKline([...kline, new_data]);
@@ -231,7 +253,7 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
       .then((response) => {
         // console.log(response.data);
         setMyPos(response.data);
-        console.log(myPos);
+        // console.log(myPos);
       });
   }
 
@@ -248,25 +270,25 @@ useWebSocket(socketUrl + "btcusdt@markPrice@1s/btcusdt@ticker/btcusdt@depth@500m
   }
 
 
-
   return (
    
     <div className="wrap">
         <Header tokenPrice={indexPrice}></Header>
         <div className="main">
-            <Sidebar></Sidebar>
+            <Sidebar active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">
             
                 <TokenHeader></TokenHeader>
                 <div className="token_wrap sidebar_active">
-                    <TokenChart newData={lastCandlestick} kline={kline}></TokenChart>
-                    <TokenOrders depth={depth} flagStateLong={flagStateLong}tokenMarkPrice={markPrice}  tokenIndexPrice={indexPrice} ></TokenOrders>
+                    <TokenChart highPrice={highPrice} lowPrice={lowPrice}
+                    newData={lastCandlestick} kline={kline}></TokenChart>
+                    <TokenOrders stepVal={stepVal} setStepVal={setStepVal} depth={depth} flagStateLong={flagStateLong}tokenMarkPrice={markPrice}  tokenIndexPrice={indexPrice} ></TokenOrders>
                     <TokenBuy openLimitPos={openLimitPos} indexPrice={indexPrice} balance={balance} openPos={openPos} setLimitOrders={setLimitOrders}></TokenBuy>
                 </div>
             </div>
       
         </div>
-        <Positions deletePos={deletePos} tokenPrice={indexPrice} pos={myPos}></Positions>
+        {/* <Positions deletePos={deletePos} tokenPrice={indexPrice} pos={myPos}></Positions> */}
     </div>
   );
 

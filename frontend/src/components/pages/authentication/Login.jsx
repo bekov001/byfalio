@@ -4,7 +4,7 @@ import React, {useState, useContext} from 'react'
 import '../../pages/authentication/styles/login.css'
 import axios from 'axios'
 import { AuthContext } from '../../../shared/AuthContext'
-
+import { Link } from 'react-router-dom'
 export const setAuthToken = token => {
   if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -59,7 +59,7 @@ export default function Login() {
                 required
                 onChange={event => setPassword(event.target.value)}/>
           <button type='submit' onClick={loginSubmit}>login</button>
-          <p className="message">Not registered? <a href="/register">Create an account </a></p>
+          <p className="message">Not registered? <Link to="/register">Create an account </Link></p>
           </form>
         </div>
            
