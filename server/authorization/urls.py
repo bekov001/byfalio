@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from .views import RegisterView, UserList, LoginUserView, HomeView, LogoutView, \
-    UserDetail
+    UserDetail, CurrentUserBalanceView
 
 # from .views import MyTokenObtainPairView
 
@@ -21,7 +21,8 @@ urlpatterns = [
     path("login/", LoginUserView.as_view()),
     path("home/", HomeView.as_view()),
     path('logout/', LogoutView.as_view(), name ='logout'),
-    path('detail/', UserDetail.as_view(), name ='logout')
+    path('detail/', UserDetail.as_view(), name ='logout'),
+    path('balance/', CurrentUserBalanceView.as_view()),
 
 
 ]

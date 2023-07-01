@@ -2,14 +2,21 @@ import React,{useState} from 'react';
 import Input from '../../../../components/parts/Input.jsx';
 import ProcentFromCount from '../../../../components/parts/ProcentFromCount';
 
-function CloseWith({closeWithShow,setCloseWithShow}){
-    const [price, setPrice] = useState(29337);
+function CloseWith({closeWithShow,setCloseWithShow, pnlProfit, openPrice, ticker, currentPrice, positionSize}){
+    const [price, setPrice] = useState(positionSize);
     const [count, setCount] = useState(0.1); 
+
+    // const []
 
     const [closeWithMarketShow, setCloseWithMarket] = useState(true);
     const setCloseWithShowSet = () => {
         setCloseWithShow(false);
     }
+
+    function changeValue(percent){
+        setPrice((positionSize * percent / 100).toFixed(2))
+    }
+
     return (
         <div className={closeWithShow ? "trade_modal close_with_modal " : "trade_modal close_with_modal hidden"}>
             <div className="trade_modal_filter">
@@ -34,11 +41,11 @@ function CloseWith({closeWithShow,setCloseWithShow}){
                         <div className="trade_modal_main_price">
                             <div className="trade_modal_main_price_row">
                                 <span>Цена входа</span>
-                                <p>29,209.89</p>
+                                <p>{openPrice}</p>
                             </div>
                             <div className="trade_modal_main_price_row">
                                 <span>Рыноч. цена</span>
-                                <p>28,881.4</p>
+                                <p>{currentPrice}</p>
                             </div>
                         </div>
                         <div className="trade_modal_main_input trade_modal_mtstandart">
@@ -86,11 +93,11 @@ function CloseWith({closeWithShow,setCloseWithShow}){
                         <div className="trade_modal_main_price">
                             <div className="trade_modal_main_price_row">
                                 <span>Цена входа</span>
-                                <p>29,209.89</p>
+                                <p>{openPrice.toFixed(2)}</p>
                             </div>
                             <div className="trade_modal_main_price_row">
                                 <span>Рыноч. цена</span>
-                                <p>28,881.4</p>
+                                <p>{currentPrice}</p>
                             </div>
                         </div>
                         <div className="trade_modal_main_input trade_modal_mtstandart">
@@ -101,9 +108,9 @@ function CloseWith({closeWithShow,setCloseWithShow}){
                             <Input placeholder={"0.00"} value={price} type={"text"} changeValue={setPrice}> </Input>
                             </div>
                         </div>
-                        <ProcentFromCount classN={"trade_modal_main_procent"}/>
+                        <ProcentFromCount classN={"trade_modal_main_procent"} changeValue={changeValue}/>
                         <div className="trade_modal_main_text_info">
-                            Ожидаемый убытки составляют: 68.6970 USDT (Включая расчетную комисиию за закрытие)
+                            {pnlProfit < 0 ? "Ожидаемые убытки составляют" : "Ожидаемая прибыль составляет"}: {pnlProfit > 0 ? pnlProfit : pnlProfit * -1} USDT (Включая расчетную комисиию за закрытие)
                         </div>
 
                         <div onClick={setCloseWithShowSet} className="trade_modal_main_btn_full trade_modal_main_btn_full_mt">

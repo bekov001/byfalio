@@ -134,5 +134,17 @@ function transformArray(arr) {
   }
 
 
+  export function getPnl(position_size, open_price, tokenPrice, no){
+    const number = parseFloat(position_size * ((parseFloat(tokenPrice) - parseFloat(open_price))))
+    if (no){
+      return number
+    }
+    return number.toFixed(2)
+}
+
+export function getROE(quantity_usdt, position_size, open_price, tokenPrice){
+    return (getPnl(position_size, open_price, tokenPrice, true) / quantity_usdt) * 100
+}
+
   // export const BACKEND_URL = "https://byfalio.herokuapp.com";
   export const BACKEND_URL = "http://127.0.0.1:8000";

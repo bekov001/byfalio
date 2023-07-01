@@ -33,7 +33,7 @@ function getKlines(setKlines){
             // setMarkTokenPrice(markPrice);
             
             // let indexPrice = parseFloat(resp.data.indexPrice).toFixed(2);
-           console.log(resp.data.data)
+          //  console.log(resp.data.data)
             // setIndexTokenPrice(indexPrice);
     })
 }
@@ -68,7 +68,7 @@ function processDepth(depth){
 function checkLimit(limits, indexPrice, openPos){
   const data = []
   limits.forEach(element => {
-    console.log(limits)
+    // console.log(limits)
     if (element.type_of_pos == 'LONG' && parseFloat(element.open_price) >= parseFloat(indexPrice)){
 
       openPos(element)
@@ -81,7 +81,7 @@ function checkLimit(limits, indexPrice, openPos){
   });
 
   limits = limits.filter(item => !data.includes(item));
-  console.log(limits)
+  // console.log(limits)
   return limits;
 }
 function Home() {
@@ -100,6 +100,7 @@ function Home() {
   const [stepVal, setStepVal] = useState("10");
   const [highPrice, setHighPrice] = useState('--');
   const [lowPrice, setLowPrice] = useState('--');
+  // const [balance, setLowPrice] = useState('--');
 
 // useWebSocket(WS_URL + "btcusdt@depth", {
 //  onOpen: () => {
@@ -132,9 +133,9 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
        setIndexPrice(data)
       }
        else if (response[0] && response[0].e === 'markPriceUpdate') {
-         console.log(response);
+        //  console.log(response);
         const mark_price = response.find(item => item.s === "BTCUSDT")
-        console.log(mark_price)
+        // console.log(mark_price)
         setMarkPrice(parseFloat(mark_price.p).toFixed(2))
        } else if (response.e === "depthUpdate") {
         setDepth(processDepth(
@@ -156,7 +157,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
         const low_price = parseFloat(new_data.low).toFixed(2);
         setHighPrice(high_price);
         setLowPrice(low_price);
-        console.log(new_data)
+        // console.log(new_data)
         setLastCandlestick(new_data);
         // console.log(new_data);
       
@@ -180,8 +181,10 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
     // useEffect
     useEffect(() => {
       // let interval = setInterval(() => {
+        getBalance()
         getKlines(setKline)
         updatePos()
+        closeMarketPos()
           // getIndexPrice(setTokenIndexPrice)
       // }, 100);
       
@@ -216,36 +219,71 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
         type_of_pos: newPos.type_of_pos,
         leverage: newPos.leverage,
         quantity_usdt: newPos.quantity_usdt,
-        open_price: indexPrice,
         ticker: "BTCUSDT",
       }
-    console.log('pushed', payload)
+    // console.log('pushed', payload)
       jwtInterceptor
-      .post(BACKEND_URL + "/exchange/open_order/", payload).then((response) =>
-          updatePos()
+      .post(BACKEND_URL + "/exchange/open_order/", payload).then((response) => {
+        updatePos()
+        getBalance()
+      }
+          
       )
       
     }
       
   }
 
+
+  function closeMarketPos(newPos) {
+    
+      const payload = {
+        // type_of_pos: newPos.type_of_pos,
+        // leverage: newPos.leverage,
+        // quantity_usdt: newPos.quantity_usdt,
+        // ticker: "BTCUSDT",
+      }
+    // console.log('pushed', payload)
+      jwtInterceptor
+      .post(BACKEND_URL + "/exchange/close_market_position/", payload).then((response) => {
+        getBalance()
+      }
+          
+      )
+      
+    
+      
+  }
   
   function openLimitPos(newPos) {
     const payload = {
       type_of_pos: newPos.type_of_pos,
+      type_of_order: "LIMIT",
       leverage: newPos.leverage,
       quantity_usdt: newPos.quantity_usdt,
-      open_price: newPos.limit_price,
+      price: newPos.limit_price,
       ticker: "BTCUSDT",
     }
-    console.log(limitOrders)
+    console.log(payload)
 
-    setLimitOrders([...limitOrders, payload])
+    // setLimitOrders([...limitOrders, payload])
     // co
-    // jwtInterceptor
-    // .post("http://localhost:8000/exchange/open_order/", payload)
-    // updatePos()
+    jwtInterceptor
+    .post("http://localhost:8000/exchange/open_limit_order/", payload)
+    updateLimits()
 }
+
+
+function updateLimits(){
+  jwtInterceptor
+  .get(BACKEND_URL + "/exchange/limit_orders/")
+    .then((response) => {
+      console.log(response.data);
+      // setMyPos(response.data);
+      // console.log(myPos);
+    });
+}
+
 
   function updatePos(){
     jwtInterceptor
@@ -264,16 +302,32 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
       .then((response) => {
         // // console.log(response.data);
         // setMyPos(response.data);
-        console.log(response);
+        // console.log(response);
         updatePos()
       });
   }
+
+  const getBalance = () => {
+    // invoke the logout API call, for our NestJS API no logout API
+   jwtInterceptor
+    .get(
+      BACKEND_URL + "/api/balance/",
+        
+      
+    ).then(
+      (response) => {
+        setBalance(response.data['balance'])
+        // console.log("b", response)
+      }
+    )
+   
+  };
 
 
   return (
    
     <div className="wrap">
-        <Header tokenPrice={indexPrice}></Header>
+        <Header tokenPrice={indexPrice} balance={balance}></Header>
         <div className="main">
             <Sidebar active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">

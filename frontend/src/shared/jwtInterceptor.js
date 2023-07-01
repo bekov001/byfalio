@@ -35,7 +35,9 @@ let tokensData = JSON.parse(localStorage.getItem("tokens"));
     return response;
   },
   async (error) => {
-    if (error.response.status === 401) {
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
       const authData = JSON.parse(localStorage.getItem("tokens"));
       const payload = {
         // access_token: authData.access_token,
@@ -56,7 +58,11 @@ let tokensData = JSON.parse(localStorage.getItem("tokens"));
       error.config.headers[
         "Authorization"
       ] = `bearer ${apiResponse.data["access"]}`;
-      return axios(error.config);
+
+      return jwtInterceptor(originalRequest);
+      
+      // console.log(error.request.responseURL)
+      // return axios(error.config);
     } else {
       return Promise.reject(error);
     }

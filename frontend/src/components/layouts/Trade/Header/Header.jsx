@@ -8,13 +8,14 @@ import useWebSocket from 'react-use-websocket';
 function Header(props){
     const [tokenSearch, setTokenSearch] = useState(false);
     const [notificationShow, setNotificationShow] = useState(false);
-    // const {tokenPrice} = props;
+    const {balance} = props;
 
     const [socketUrl, setSocketUrl] = useState("wss://fstream.binance.com:443/stream?streams=");
     const [tokenPrice, setTokenPrice] = useState('--');
     const [priceChange, setPriceChange] = useState('--');
     const [highPrice, setHighPrice] = useState('--');
     const [lowPrice, setLowPrice] = useState('--');
+
 
     useWebSocket(socketUrl + "btcusdt@ticker/", {
         onOpen: () => {
@@ -90,10 +91,10 @@ function Header(props){
             <div className="overview_active">
                 <div className="overview_active_balance">
                     <div className="overview_active_balance_usdt">
-                    964.34 USDT
+                    {balance} USDT
                     </div>
                     <div className="overview_active_balance_btc">
-                    ≈0.03524242 BTC
+                    ≈{(balance / tokenPrice).toFixed(6)} BTC
                     </div>
                 </div>
             </div>

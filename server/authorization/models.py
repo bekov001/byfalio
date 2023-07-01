@@ -15,7 +15,7 @@ from django.dispatch import receiver
 class User(AbstractUser):
     phone_number = models.CharField(max_length=12, null=True)
     email = models.EmailField(null=True)
-    balance = models.IntegerField(default=0)
+    balance = models.IntegerField(default=1000)
     kyc = False
     # bio = models.TextField(max_length=500, blank=True)
     # location = models.CharField(max_length=30, blank=True)

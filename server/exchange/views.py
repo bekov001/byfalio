@@ -1,3 +1,4 @@
+from binance.um_futures import UMFutures
 from django.shortcuts import render
 
 # Create your views here.
@@ -9,15 +10,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 
-from .models import Order
+from .models import Position, LimitOrder
+from .serializers import PositionListSerializer, CreatePositionSerializer, \
+    CreateLimitOrderSerializer, LimitOrderListSerializer
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        # owner = serializers.ReadOnlyField(source='owner.username')
-
-        fields = ['id', 'created', 'ticker', 'quantity_usdt', 'is_active', 'closed', "open_price", "leverage", "type_of_pos"]
+from binance.cm_futures import CMFutures
 
 
 def index(request):
@@ -57,67 +55,79 @@ def history(request, pair, time):
                 "close": data[4]
             }
         )
+    # print(src)
     return Response({'data': src})
     # return render(request, "exchange/dubai.html")
 
 
-# @api_view(('GET',))
-# @permission_classes((AllowAny,))
-# def history(request, pair, time):
-#     import logging
-#     from binance.cm_futures import CMFutures
-#     from binance.lib.utils import config_logging
-#
-#     config_logging(logging, logging.DEBUG)
-#
-#     cm_futures_client = CMFutures()
-#     get_request = (cm_futures_client.index_price_klines(pair[:-1], time,
-#                                                **{"limit": 999}))
-#     src = []
-#     for data in get_request:
-#         src.append(
-#             {
-#                 "time": data[0] / 1000,
-#                 "open": data[1],
-#                 "high": data[2],
-#                 "low": data[3],
-#                 "close": data[4]
-#             }
-#         )
-#     return Response({'data': src})
-    # return render(request, "exchange/dubai.html")
-
-
-class OrderCreate(CreateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+class CreateMarketPosition(CreateAPIView):
+    queryset = Position.objects.all()
+    serializer_class = CreatePositionSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        futures_client = UMFutures()
+        get_request = (futures_client.mark_price(symbol=self.request.data["ticker"]))
+        current_price = float(get_request['markPrice'])
+
+        if self.request.user.balance - float(self.request.data['quantity_usdt']) < 0:
+            raise serializers.ValidationError({"error": "not enough balance"})
+        else:
+            self.request.user.balance -= float(self.request.data['quantity_usdt'])
+            self.request.user.save()  # this will update only
+
+            serializer.save(owner=self.request.user,
+                            open_price=current_price,
+                            position_size=self.request.data['leverage']
+                                          * float(self.request.data['quantity_usdt'])
+                                          / current_price)
 
 
-# class OrderDelete(APIView):
-#    queryset = Order.objects.all()
-#    serializer_class = OrderSerializer
-#    # permission_classes = [IsAuthenticated]
-#    permission_classes = [IsAuthenticated]
-#
-#    def delete(self, request, id, format=None):
-#        # snippet = self.get_object(pk)
-#        # snippet.delete()
-#        # return Response(status=status.HTTP_204_NO_CONTENT)
-#         print(id, request.user.username)
-#         order = Order.objects.get(id=id, username=request.user.username)
-#         order.is_active = False
-#         order
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+class LimitOrderCreate(CreateAPIView):
+    queryset = LimitOrder.objects.all()
+    serializer_class = CreateLimitOrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # t = TemperatureData.objects.get(id=1)
+        serializer.save(owner=self.request.user,
+                        position_size=self.request.data['leverage']
+                                      * float(self.request.data['quantity_usdt'])
+                                      / float(self.request.data['price']))
+
+
+class LimitOrderList(ListAPIView):
+    # from django.contrib.auth import get_user_model
+    # User = get_user_model()
+    # queryset = Order.objects.all(request.user)
+    serializer_class = LimitOrderListSerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        return LimitOrder.objects.filter(owner=user.id)
+
+
+class CloseMarketPosition(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        test = {
+            "id": '',
+            "ticker": '',
+            'position_size': ''
+        }
+        return Response({"nothing": "bro"})
+
 
 @api_view(["post"])
 @permission_classes((IsAuthenticated,))
 def close_order(request, id):
     try:
-        order = Order.objects.get(id=id, owner=request.user.id)
+        order = Position.objects.get(id=id, owner=request.user.id)
         if order:
             order.is_active = False
             order.save()
@@ -132,7 +142,7 @@ class OrderList(ListAPIView):
     # from django.contrib.auth import get_user_model
     # User = get_user_model()
     # queryset = Order.objects.all(request.user)
-    serializer_class = OrderSerializer
+    serializer_class = PositionListSerializer
 
     def get_queryset(self):
         """
@@ -140,4 +150,4 @@ class OrderList(ListAPIView):
         for the currently authenticated user.
         """
         user = self.request.user
-        return Order.objects.filter(owner=user.id)
+        return Position.objects.filter(owner=user.id)

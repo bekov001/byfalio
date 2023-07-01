@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-function Market({summ}){
+function Market({summ, setSumm}){
 
     return (
         <div>
@@ -10,7 +10,7 @@ function Market({summ}){
                     Сумма
                 </div>
                 <div className="token_buy_price_input border_gradient">
-                    <input type="text" value={summ}/>
+                    <input type="number" value={summ} onChange={e => setSumm(e.target.value)}/>
                     <div className="token_buy_price_input_row">
                         
                         <p>

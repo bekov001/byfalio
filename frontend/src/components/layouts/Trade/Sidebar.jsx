@@ -67,8 +67,6 @@ function Sidebar({active_pos, tokenPrice}){
         setLeadersShow(false);
         setMenuLinkId(4);
     }
-
-    console.log(active_pos);
     return (
         <div className={menuLinkId!=4 ? "sidebar_menu sidebar_menu_active" : "sidebar_menu"} >
         <div className="sidebar_menu_links">

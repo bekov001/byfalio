@@ -6,6 +6,9 @@ from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import WebsocketConsumer, \
     AsyncWebsocketConsumer
 
+from .models import Position
+from .serializers import PositionListSerializer
+
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -88,6 +91,20 @@ class PriceConsumer(AsyncWebsocketConsumer):
         #     await worker_ws.send(json.dumps(message))
         #     result = json.loads(await worker_ws.recv())
         # await self.send(text_data=json.dumps({ 'to': 'Client' })
+
+
+class OrderConsumer(WebsocketConsumer):
+    def get_chart(self):
+        # serializer = OrderListSerializer()
+        queryset = Position.objects.filter(is_active=True)
+        data = PositionListSerializer(queryset, many=True).data
+        return data
+
+    def connect(self):
+        data = self.get_chart()
+        self.accept()
+        self.send(text_data=json.dumps({"message": data}))
+
 # async def create_ws(on_create, on_message):
 #     from binance.websocket.um_futures.websocket_client import \
 #         UMFuturesWebsocketClient

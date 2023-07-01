@@ -85,7 +85,7 @@ function Main({openPos, balance, openLimitPos, indexPrice}){
             </div>
         </div>
         <div className="token_buy_price">
-            {tabActive == 1 ? <Market summ={summ}/> : <Limit limitPrice={limitPrice} setLimitPrice={setLimitPrice} summ={summ}/>}
+            {tabActive == 1 ? <Market summ={summ} setSumm={setSumm}/> : <Limit limitPrice={limitPrice} setLimitPrice={setLimitPrice} summ={summ}/>}
             <ProcentFromCount changeValue={changeValue}/>
         </div>
 

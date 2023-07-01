@@ -4,6 +4,7 @@ import Tpsl from '../../../modals/Trade/History/Tpsl';
 import CloseWith from '../../../modals/Trade/History/CloseWith';
 // import Pnl from 'C:\Users\Home\Desktop\papka\byfal\byfalio_exchange-master\src\components\modals\Trade\History\Pnl.jsx';
 import Pnl from '../../../modals/Trade/History/Pnl';
+import { getPnl, getROE } from '../../../../helpers';
 function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
 
     const [cancelAllShow, setCancelAllShow] = useState(false);
@@ -13,12 +14,43 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
     if (!pos){
         pos = []
     }
-    function getPnl(quantity_usdt, leverage, open_price, tokenPrice){
-        return ((quantity_usdt * leverage / open_price) * ((tokenPrice - open_price))).toFixed(2)
+
+
+    const [pnlPercentage, setPnlPercentage] = useState(0);
+    const [positionType, setPositionType] = useState(0);
+    const [pnlProfit, setPnlProfit] = useState(0);
+    const [leverage, setLeverage] = useState(0);
+    const [openPrice, setOpenPrice] = useState(0);
+    const [ticker, setTicker] = useState(0);
+    const [currentPrice, setCurrentPrice] = useState();
+    const [positionId, setPositionId] = useState(0);
+    const [positionSize, setPositionSize] = useState(0)
+
+    function openPnlShow(position){
+        
+        const ROE = (position.type_of_pos === 'LONG' ? (getROE(position.quantity_usdt, position.position_size, position.open_price, tokenPrice)).toFixed(2) : (-1 * getROE(position.quantity_usdt, position.position_size, position.open_price, tokenPrice)).toFixed(2))
+        console.log("ROE", ROE)
+        const pnl = getPnl((position.type_of_pos === "SHORT" ? -1 : 1) * position.position_size, position.open_price, tokenPrice)
+        setPnlShow(true)
+        setPnlPercentage(ROE)
+        setPositionType(position.type_of_pos)
+        setPnlProfit(pnl)
+        setLeverage(position.leverage);
+        setOpenPrice(position.open_price);
+        setTicker(position.ticker);
+        setCurrentPrice(tokenPrice);
     }
 
-    function getROE(quantity_usdt, leverage, open_price, tokenPrice){
-        return (getPnl(quantity_usdt, leverage, open_price, tokenPrice) / ((quantity_usdt / open_price) * tokenPrice)) * leverage
+    function openCloseShow(ID, ticker, amount, open_price, type_of_pos){
+        setCloseWithShow(true)
+        setPositionId(ID)
+        setTicker(ticker)
+        const pnl = getPnl((type_of_pos === "SHORT" ? -1 : 1) * amount, open_price, tokenPrice)
+        setPnlProfit(pnl)
+        setCurrentPrice(tokenPrice);
+        setPositionSize(amount)
+        setOpenPrice(open_price); 
+
     }
     return (
         <div className={tradeHistoryActiveOrdersShow ? "sidebar_menu_main_history_active_order " : "sidebar_menu_main_history_active_order hidden"}>
@@ -29,7 +61,7 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
                 <div className="history_main_row_column df">
                     <div>
                         <div className="history_main_row_name">
-                            <span>BTCUSDT</span>
+                            <span>{position.ticker}</span>
                             <div className={position.type_of_pos === "LONG"? "history_main_row_name_status bg_green" : "history_main_row_name_status bg_red"}>
                                 {position.type_of_pos}
                             </div>
@@ -39,15 +71,15 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
                         </div>
                     </div>
                     <div className="active_order_pnl_wrap">
-                        <div className="active_order_pnl_row" onClick={() => setPnlShow(true)}>
+                        <div className="active_order_pnl_row" onClick={() => openPnlShow(position)}>
                             <span>Поделиться</span>
                             <img src="img/export.svg" alt=""/>
                         </div>
-                        <div className={(getPnl((position.type_of_pos === "SHORT" ? -1 : 1) * position.quantity_usdt, position.leverage, position.open_price, tokenPrice) < 0 ? "active_order_pnl color_red" : "active_order_pnl color_green")}>
+                        <div className={(getPnl((position.type_of_pos === "SHORT" ? -1 : 1) * position.position_size, position.open_price, tokenPrice) < 0 ? "active_order_pnl color_red" : "active_order_pnl color_green")}>
                         {/* {position.type_of_pos == 'LONG' && (((tokenPrice - position.open_price) / position.open_price) * position.leverage * position.quantity_usdt).toFixed(2)}
                             ({(((tokenPrice - position.open_price) / position.open_price)).toFixed(2)}%) */}
-                            {position.type_of_pos === 'LONG' ? getPnl(position.quantity_usdt, position.leverage, position.open_price, tokenPrice) : getPnl(-1 * position.quantity_usdt, position.leverage, position.open_price, tokenPrice)}
-                            ({position.type_of_pos === 'LONG' ? (getROE(position.quantity_usdt, position.leverage, position.open_price, tokenPrice)).toFixed(2) : (-1 * getROE(position.quantity_usdt, position.leverage, position.open_price, tokenPrice)).toFixed(2)}%)
+                            {position.type_of_pos === 'LONG' ? getPnl(position.position_size, position.open_price, tokenPrice) : getPnl(-1 * position.position_size, position.open_price, tokenPrice)}
+                            ({position.type_of_pos === 'LONG' ? (getROE(position.quantity_usdt, position.position_size, position.open_price, tokenPrice)).toFixed(2) : (-1 * getROE(position.quantity_usdt, position.position_size, position.open_price, tokenPrice)).toFixed(2)}%)
 
                         
                         </div>
@@ -56,11 +88,11 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
                 <div className="active_order_info">
                     <div className="active_order_info_column">
                         <span>Размер позиции</span>
-                        <p>{(position.quantity_usdt * position.leverage / position.open_price).toFixed(2)}</p>
+                        <p>{position.position_size.toFixed(2)}</p>
                     </div>
                     <div className="active_order_info_column">
                         <span>Цена входа</span>
-                        <p>{position.open_price}</p>
+                        <p>{position.open_price.toFixed(2)}</p>
                     </div>
                     <div className="active_order_info_column">
                         <span>Mark Price</span>
@@ -75,7 +107,7 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
                     <div onClick={() => setTpslShow(true)} className="active_order_btn active_order_tpsl">
                         Установить TP/SL
                     </div>
-                    <div onClick={() => setCloseWithShow(true)}  className="active_order_btn active_order_close">
+                    <div onClick={() => openCloseShow(position.ID, position.ticker, position.position_size, position.open_price, position.type_of_pos)} className="active_order_btn active_order_close">
                         Закрыть с помощью
                     </div>
                 </div>
@@ -91,8 +123,8 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
         
         <CloseAll cancelAllShow={cancelAllShow} setCancelAllShow={setCancelAllShow}></CloseAll>
         <Tpsl tpslShow={tpslShow} setTpslShow={setTpslShow}></Tpsl>
-        <CloseWith closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
-        <Pnl pnlShow={pnlShow} setPnlShow={setPnlShow}></Pnl>
+        <CloseWith currentPrice={currentPrice} ticker={ticker} pnlProfit={pnlProfit}  openPrice={openPrice}  positionSize={positionSize} closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
+        <Pnl currentPrice={currentPrice} ticker={ticker} openPrice={openPrice} leverage={leverage} pnlProfit={pnlProfit} positionType={positionType} pnlPercentage={pnlPercentage} pnlShow={pnlShow} setPnlShow={setPnlShow}></Pnl>
         </div>
     );
 }

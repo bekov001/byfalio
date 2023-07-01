@@ -16,7 +16,6 @@ function Home({tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
         setTradeHistoryActiveOrdersShow(false);
         setTradeHistoryClosedShow(true);
     }
-    console.log(pos);
     return (
         <div className={tradeHistoryShow ? "sidebar_menu_main " : "sidebar_menu_main hidden"} >
 

@@ -74,6 +74,15 @@ class UserDetail(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+class CurrentUserBalanceView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = self.request.user
+        return Response({"balance": user.balance})
+
+
 # class UserDetail(RetrieveAPIView):
 #     from django.contrib.auth import get_user_model
 #     User = get_user_model()
