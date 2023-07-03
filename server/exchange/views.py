@@ -1,3 +1,6 @@
+from datetime import datetime as dt
+
+
 from binance.um_futures import UMFutures
 from django.shortcuts import render
 
@@ -115,11 +118,31 @@ class CloseMarketPosition(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        data = (request.data)
+        futures_client = UMFutures()
+        get_request = (
+            futures_client.mark_price(symbol=request.data["ticker"]))
+        current_price = float(get_request['markPrice'])
+        position = Position.objects.get(id=data['id'], owner=request.user)
+        if position:
+            position_size = min(position.position_size, float(data['position_size']))
+
+            position.position_size -= position_size
+
+            if position.position_size == 0:
+                position.is_active = False
+                position.closed = dt.now()
+
+            position.save()
+        else:
+            return Response({'error': "not found"})
+        print(request.data)
         test = {
             "id": '',
             "ticker": '',
             'position_size': ''
         }
+
         return Response({"nothing": "bro"})
 
 
