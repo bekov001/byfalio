@@ -4,7 +4,8 @@ from datetime import datetime as dt
 from binance.um_futures import UMFutures
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
-
+from binance.client import Client
+from binance.enums import HistoricalKlinesType
 # Create your views here.
 # from django.shortcuts import render
 from rest_framework import serializers, status
@@ -39,8 +40,6 @@ def price(request):
 @api_view(('GET',))
 @permission_classes((AllowAny,))
 def history(request, pair, time):
-    from binance.client import Client
-    from binance.enums import HistoricalKlinesType
 
     client = Client()
 
