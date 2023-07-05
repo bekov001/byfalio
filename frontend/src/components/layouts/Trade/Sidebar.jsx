@@ -4,7 +4,7 @@ import LeadersTable from "../../pages/Trade/LeadersTable/LeadersTable";
 
 import React, { useState} from 'react';
 import { Link } from "react-router-dom";
-function Sidebar({active_pos, tokenPrice}){
+function Sidebar({closeMarketPos, active_pos, tokenPrice}){
 
     const [menuLinkId, setMenuLinkId] = useState(4); 
     const hideAll = () => {
@@ -114,7 +114,7 @@ function Sidebar({active_pos, tokenPrice}){
                 </a>
             </div>
         </div>
-            <TradeHistory tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
+            <TradeHistory closeMarketPos={closeMarketPos} tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
             <News newsShow={newsShow} handleNewsClose={handleNewsClose}></News>
             <LeadersTable leadersShow={leadersShow} handleLeadersClose={handleLeadersClose} ></LeadersTable>
     </div>

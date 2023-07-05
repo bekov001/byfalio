@@ -2,6 +2,7 @@ from datetime import datetime as dt
 
 
 from binance.um_futures import UMFutures
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
 # Create your views here.
@@ -19,6 +20,8 @@ from .serializers import PositionListSerializer, CreatePositionSerializer, \
 
 
 from binance.cm_futures import CMFutures
+
+from additional.help import get_pnl
 
 
 def index(request):
@@ -72,12 +75,16 @@ class CreateMarketPosition(CreateAPIView):
         futures_client = UMFutures()
         get_request = (futures_client.mark_price(symbol=self.request.data["ticker"]))
         current_price = float(get_request['markPrice'])
-
+        if float(self.request.data['quantity_usdt']) < 1:
+            raise serializers.ValidationError({"error": "less than 5"})
         if self.request.user.balance - float(self.request.data['quantity_usdt']) < 0:
             raise serializers.ValidationError({"error": "not enough balance"})
         else:
-            self.request.user.balance -= float(self.request.data['quantity_usdt'])
-            self.request.user.save()  # this will update only
+            User = get_user_model()
+            user_set = User.objects.filter(id=self.request.user.id)
+            print(self.request.user.balance,  float(self.request.data['quantity_usdt']))
+            # self.request.user.balance -= float(self.request.data['quantity_usdt'])
+            user_set.update(balance=self.request.user.balance - float(self.request.data['quantity_usdt']))  # this will update only
 
             serializer.save(owner=self.request.user,
                             open_price=current_price,
@@ -123,12 +130,13 @@ class CloseMarketPosition(APIView):
         get_request = (
             futures_client.mark_price(symbol=request.data["ticker"]))
         current_price = float(get_request['markPrice'])
-        position = Position.objects.get(id=data['id'], owner=request.user)
+        position = Position.objects.get(id=data['id'], owner=request.user, is_active=True)
         if position:
             position_size = min(position.position_size, float(data['position_size']))
-
+            pnl = (-1 if position.type_of_pos == "SHORT" else 1 ) * get_pnl(position_size, position.open_price, current_price)
+            request.user.balance += pnl + (position_size * position.open_price/ position.leverage)
+            request.user.save()
             position.position_size -= position_size
-
             if position.position_size == 0:
                 position.is_active = False
                 position.closed = dt.now()

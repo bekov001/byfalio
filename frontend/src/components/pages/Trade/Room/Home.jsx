@@ -16,7 +16,7 @@ function processKline(kline){
   console.log(kline)
 }
 
-function getKlines(setKlines){
+function getKlines(setKlines, setIsLoading){
   const apiUrl = BACKEND_URL + '/exchange/history/btcusdt/1h/';
     axios.get(apiUrl).then((resp) => {
       setKlines(resp.data.data.map((element) => {
@@ -28,6 +28,7 @@ function getKlines(setKlines){
           time: element.time
         }
       }))
+      setIsLoading(false);
             // let markPrice = parseFloat(resp.data.markPrice).toFixed(2);
             // // console.log(price)
             // setMarkTokenPrice(markPrice);
@@ -100,6 +101,7 @@ function Home() {
   const [stepVal, setStepVal] = useState("10");
   const [highPrice, setHighPrice] = useState('--');
   const [lowPrice, setLowPrice] = useState('--');
+  const [isLoading, setIsLoading] = useState(true);
   // const [balance, setLowPrice] = useState('--');
 
 // useWebSocket(WS_URL + "btcusdt@depth", {
@@ -158,7 +160,11 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
         setHighPrice(high_price);
         setLowPrice(low_price);
         // console.log(new_data)
-        setLastCandlestick(new_data);
+        if (kline.length> 0){
+          setLastCandlestick(new_data);
+          
+        }
+
         // console.log(new_data);
       
         // setKline([...kline, new_data]);
@@ -182,7 +188,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
     useEffect(() => {
       // let interval = setInterval(() => {
         getBalance()
-        getKlines(setKline)
+        getKlines(setKline, setIsLoading)
         updatePos()
         closeMarketPos()
           // getIndexPrice(setTokenIndexPrice)
@@ -306,6 +312,32 @@ function updateLimits(){
         updatePos()
       });
   }
+  function closeMarketPos(position){
+    console.log(position)
+    if (position){
+      const payload = {
+        id: position.positionId,
+        ticker: position.ticker,
+        position_size: position.size
+    }
+    
+    jwtInterceptor
+  .post(
+  BACKEND_URL + "/exchange/close_market_position/",
+    payload
+  
+  ).then(
+  (response) => {
+    updatePos()
+    getBalance()
+    // setBalance(response.data['balance'])
+    // console.log("b", response)
+  })
+
+
+    }
+    
+  }
 
   const getBalance = () => {
     // invoke the logout API call, for our NestJS API no logout API
@@ -317,7 +349,7 @@ function updateLimits(){
     ).then(
       (response) => {
         setBalance(response.data['balance'])
-        // console.log("b", response)
+       console.log("b", response)
       }
     )
    
@@ -329,12 +361,12 @@ function updateLimits(){
     <div className="wrap">
         <Header tokenPrice={indexPrice} balance={balance}></Header>
         <div className="main">
-            <Sidebar active_pos={myPos} tokenPrice={markPrice}></Sidebar>
+            <Sidebar closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">
             
                 <TokenHeader></TokenHeader>
                 <div className="token_wrap sidebar_active">
-                    <TokenChart highPrice={highPrice} lowPrice={lowPrice}
+                    <TokenChart isLoading={isLoading} highPrice={highPrice} lowPrice={lowPrice}
                     newData={lastCandlestick} kline={kline}></TokenChart>
                     <TokenOrders stepVal={stepVal} setStepVal={setStepVal} depth={depth} flagStateLong={flagStateLong}tokenMarkPrice={markPrice}  tokenIndexPrice={indexPrice} ></TokenOrders>
                     <TokenBuy openLimitPos={openLimitPos} indexPrice={indexPrice} balance={balance} openPos={openPos} setLimitOrders={setLimitOrders}></TokenBuy>

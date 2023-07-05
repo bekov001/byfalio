@@ -1,10 +1,12 @@
 import React, { useState} from 'react';
 import Original from './Original';
 import TradingView from './TradingView';
+import './loading.css';
 
-function Main({kline, newData, lowPrice, highPrice}){
+function Main({kline, newData, lowPrice, highPrice, isLoading}){
   const [chartType, setChartType] = useState(1); 
   const [chartTimeline, setChartTimeline] = useState(3); 
+
     return (
       <div className="token_chart">
         <div className="token_chart_header">
@@ -49,9 +51,15 @@ function Main({kline, newData, lowPrice, highPrice}){
             </div>
         </div>
         <div className="token_chart_main">
-        {(chartType == 1) ? <Original chartType={chartType} kline={kline} newData={newData} /> : <TradingView chartType={chartType}/>}
+          {isLoading ?  <div className="spinner-container">
+        <div className="loading-spinner">
+      </div>
+      </div>
+        :  (chartType == 1) ? <Original chartType={chartType} kline={kline} newData={newData} /> : <TradingView chartType={chartType}/>}
+       
         </div>
     </div>
     );
-}
+  }
+  
 export default Main

@@ -3,7 +3,7 @@ import ClosedOrders from "./ClosedOrders";
 import ActiveOrders from './ActiveOrders';
 
 
-function Home({tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
+function Home({closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
 
     const [tradeHistoryActiveOrdersShow, setTradeHistoryActiveOrdersShow] = useState(false);
     const [tradeHistoryClosedShow, setTradeHistoryClosedShow] = useState(true);
@@ -35,7 +35,7 @@ function Home({tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
 
                 <ClosedOrders tradeHistoryClosedShow={tradeHistoryClosedShow}></ClosedOrders>
 
-                <ActiveOrders tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
+                <ActiveOrders closeMarketPos={closeMarketPos}tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
 
             </div>
         </div>

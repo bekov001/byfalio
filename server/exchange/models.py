@@ -9,7 +9,7 @@ class Position(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     ticker = models.CharField(max_length=20, blank=True, default='')
     position_size = models.FloatField()
-    quantity_usdt = models.IntegerField()
+    quantity_usdt = models.FloatField()
     is_active = models.BooleanField(default=True)
     closed = models.DateTimeField(blank=True, null=True)
     type_of_pos = models.CharField(max_length=5, blank=True)

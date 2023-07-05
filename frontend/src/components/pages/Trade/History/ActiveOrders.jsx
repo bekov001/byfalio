@@ -5,7 +5,7 @@ import CloseWith from '../../../modals/Trade/History/CloseWith';
 // import Pnl from 'C:\Users\Home\Desktop\papka\byfal\byfalio_exchange-master\src\components\modals\Trade\History\Pnl.jsx';
 import Pnl from '../../../modals/Trade/History/Pnl';
 import { getPnl, getROE } from '../../../../helpers';
-function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
+function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenPrice}){
 
     const [cancelAllShow, setCancelAllShow] = useState(false);
     const [tpslShow, setTpslShow] = useState(false);
@@ -107,7 +107,7 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
                     <div onClick={() => setTpslShow(true)} className="active_order_btn active_order_tpsl">
                         Установить TP/SL
                     </div>
-                    <div onClick={() => openCloseShow(position.ID, position.ticker, position.position_size, position.open_price, position.type_of_pos)} className="active_order_btn active_order_close">
+                    <div onClick={() => openCloseShow(position.id, position.ticker, position.position_size, position.open_price, position.type_of_pos)} className="active_order_btn active_order_close">
                         Закрыть с помощью
                     </div>
                 </div>
@@ -123,7 +123,7 @@ function ActiveOrders({tradeHistoryActiveOrdersShow, pos, tokenPrice}){
         
         <CloseAll cancelAllShow={cancelAllShow} setCancelAllShow={setCancelAllShow}></CloseAll>
         <Tpsl tpslShow={tpslShow} setTpslShow={setTpslShow}></Tpsl>
-        <CloseWith currentPrice={currentPrice} ticker={ticker} pnlProfit={pnlProfit}  openPrice={openPrice}  positionSize={positionSize} closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
+        <CloseWith closeMarketPos={closeMarketPos} positionId={positionId} currentPrice={currentPrice} ticker={ticker} pnlProfit={pnlProfit}  openPrice={openPrice}  positionSize={positionSize} closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
         <Pnl currentPrice={currentPrice} ticker={ticker} openPrice={openPrice} leverage={leverage} pnlProfit={pnlProfit} positionType={positionType} pnlPercentage={pnlPercentage} pnlShow={pnlShow} setPnlShow={setPnlShow}></Pnl>
         </div>
     );

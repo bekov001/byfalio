@@ -9,3 +9,8 @@ def email_check(email):
     except ValidationError:
         return False
 
+
+def get_pnl(position_size, open_price, current_price):
+    number = float(position_size) * (float(current_price) - float(open_price))
+    return number
+
