@@ -39,7 +39,7 @@ def price(request):
 @api_view(('GET',))
 @permission_classes((AllowAny,))
 def history(request, pair, time):
-    from binance.client import Client
+    from binance import Client
     from binance.enums import HistoricalKlinesType
 
     client = Client()
