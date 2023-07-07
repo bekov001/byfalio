@@ -10,9 +10,10 @@ function CloseWith({closeMarketPos, closeWithShow,setCloseWithShow, pnlProfit, o
     const [amount, setAmount] = useState(positionSize); 
     const [percentageChange, setPercentageChange] = useState(false);
     const [check, setCheck] = useState(true);
+    const [percent, setPercent] = useState(100);
 
     if (closeWithShow && check){
-       setAmount(positionSize.toFixed(2))
+       setAmount((positionSize * percent / 100).toFixed(2))
        setPercentageChange(false);
        setCheck(false)
     }
@@ -37,6 +38,7 @@ function CloseWith({closeMarketPos, closeWithShow,setCloseWithShow, pnlProfit, o
         if (percent === 100){
             setPercentageChange(false);
         }
+        setPercent(percent);
         setAmount((positionSize * percent / 100).toFixed(2))
     }
 

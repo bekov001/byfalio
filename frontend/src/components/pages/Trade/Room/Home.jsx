@@ -95,13 +95,14 @@ function Home() {
   let [lastCandlestick, setLastCandlestick] = useState([]);
   const [myPos, setMyPos] = useState([]);
   const ticker = 'btcusdt';
-  const [balance, setBalance] = useState(100);
+  const [balance, setBalance] = useState(0);
   const [limitOrders, setLimitOrders] = useState([]);
   const [worked, setWorked] = useState([]);
   const [stepVal, setStepVal] = useState("10");
   const [highPrice, setHighPrice] = useState('--');
   const [lowPrice, setLowPrice] = useState('--');
   const [isLoading, setIsLoading] = useState(true);
+  // const [limitOrders, setMyLimitOrders] = useState([]);
   // const [balance, setLowPrice] = useState('--');
 
 // useWebSocket(WS_URL + "btcusdt@depth", {
@@ -191,6 +192,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
         getKlines(setKline, setIsLoading)
         updatePos()
         closeMarketPos()
+        updateLimits()
           // getIndexPrice(setTokenIndexPrice)
       // }, 100);
       
@@ -241,6 +243,8 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
   }
 
 
+
+
   function closeMarketPos(newPos) {
     
       const payload = {
@@ -275,8 +279,11 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
     // setLimitOrders([...limitOrders, payload])
     // co
     jwtInterceptor
-    .post("http://localhost:8000/exchange/open_limit_order/", payload)
-    updateLimits()
+    .post(BACKEND_URL + "/exchange/open_limit_order/", payload).then((response) => {
+      updateLimits()
+      getBalance()
+    })
+    
 }
 
 
@@ -284,7 +291,7 @@ function updateLimits(){
   jwtInterceptor
   .get(BACKEND_URL + "/exchange/limit_orders/")
     .then((response) => {
-      console.log(response.data);
+      setLimitOrders(response.data);
       // setMyPos(response.data);
       // console.log(myPos);
     });
@@ -302,16 +309,19 @@ function updateLimits(){
   }
 
 
-  function deletePos(id){
+  function cancelLimitOrder(id){
     jwtInterceptor
-    .post(BACKEND_URL + "/exchange/order/" + id)
+    .post(BACKEND_URL + "/exchange/cancel_limit_order/", {id: id})
       .then((response) => {
         // // console.log(response.data);
         // setMyPos(response.data);
         // console.log(response);
-        updatePos()
+        updateLimits()
+        getBalance()
       });
   }
+
+
   function closeMarketPos(position){
     console.log(position)
     if (position){
@@ -361,7 +371,7 @@ function updateLimits(){
     <div className="wrap">
         <Header tokenPrice={indexPrice} balance={balance}></Header>
         <div className="main">
-            <Sidebar closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
+            <Sidebar cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">
             
                 <TokenHeader></TokenHeader>
@@ -369,7 +379,7 @@ function updateLimits(){
                     <TokenChart isLoading={isLoading} highPrice={highPrice} lowPrice={lowPrice}
                     newData={lastCandlestick} kline={kline}></TokenChart>
                     <TokenOrders stepVal={stepVal} setStepVal={setStepVal} depth={depth} flagStateLong={flagStateLong}tokenMarkPrice={markPrice}  tokenIndexPrice={indexPrice} ></TokenOrders>
-                    <TokenBuy openLimitPos={openLimitPos} indexPrice={indexPrice} balance={balance} openPos={openPos} setLimitOrders={setLimitOrders}></TokenBuy>
+                    <TokenBuy openLimitPos={openLimitPos} indexPrice={indexPrice} balance={balance} openPos={openPos}></TokenBuy>
                 </div>
             </div>
       

@@ -1,20 +1,31 @@
 import React, { useState} from 'react';
 import ClosedOrders from "./ClosedOrders";
 import ActiveOrders from './ActiveOrders';
+import Limit from '../Room/TokenBuy/Limit';
+import ActiveOrdersV2 from './ActiveOrdersV2';
+import LimitOrder from './LimitOrder';
 
 
-function Home({closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
+function Home({cancelLimitOrder, limitOrders, closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
 
-    const [tradeHistoryActiveOrdersShow, setTradeHistoryActiveOrdersShow] = useState(false);
-    const [tradeHistoryClosedShow, setTradeHistoryClosedShow] = useState(true);
+    const [tradeHistoryActiveOrdersShow, setTradeHistoryActiveOrdersShow] = useState(true);
+    const [tradeHistoryClosedShow, setTradeHistoryClosedShow] = useState(false);
+    const [tradeLimitOrderShow, setTradeLimitOrderShow] = useState(false);
 
     const handleTradeHistoryActiveOrdersShow = () => {
         setTradeHistoryActiveOrdersShow(true);
         setTradeHistoryClosedShow(false);
+        setTradeLimitOrderShow(false);
     }
     const handleTradeHistoryClosedShow = () => {
         setTradeHistoryActiveOrdersShow(false);
         setTradeHistoryClosedShow(true);
+        setTradeLimitOrderShow(false);
+    }
+    const handleTradeLimitOrderShow = () => {
+        setTradeHistoryActiveOrdersShow(false);
+        setTradeHistoryClosedShow(false);
+        setTradeLimitOrderShow(true);
     }
     return (
         <div className={tradeHistoryShow ? "sidebar_menu_main " : "sidebar_menu_main hidden"} >
@@ -28,15 +39,18 @@ function Home({closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, to
                     <div onClick={handleTradeHistoryActiveOrdersShow} className={tradeHistoryActiveOrdersShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"} >
                         Открытые
                     </div>
+                    <div onClick={handleTradeLimitOrderShow} className={tradeLimitOrderShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"}>
+                        Лимитные
+                    </div>
                     <div onClick={handleTradeHistoryClosedShow} className={tradeHistoryClosedShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"}>
                         Закрытые
                     </div>
                 </div>
 
                 <ClosedOrders tradeHistoryClosedShow={tradeHistoryClosedShow}></ClosedOrders>
-
+                <LimitOrder cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} tradeHistoryLimitOrderShow={tradeLimitOrderShow}></LimitOrder>
                 <ActiveOrders closeMarketPos={closeMarketPos}tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
-
+                {/* <ActiveOrdersV2  tradeHistoryActiveOrdersShow={tradeLimitOrderShow}></ActiveOrdersV2> */}
             </div>
         </div>
     );

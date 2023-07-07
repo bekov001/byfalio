@@ -22,7 +22,11 @@ from .serializers import PositionListSerializer, CreatePositionSerializer, \
 
 from binance.cm_futures import CMFutures
 
-from additional.help import get_pnl
+from additional.help import get_pnl, update_balance
+
+QUANTITY_LEVEL = 3
+
+
 
 
 def index(request):
@@ -74,8 +78,8 @@ class CreateMarketPosition(CreateAPIView):
         futures_client = UMFutures()
         get_request = (futures_client.mark_price(symbol=self.request.data["ticker"]))
         current_price = float(get_request['markPrice'])
-        if float(self.request.data['quantity_usdt']) < 1:
-            raise serializers.ValidationError({"error": "less than 5"})
+        if float(self.request.data['quantity_usdt']) < QUANTITY_LEVEL:
+            raise serializers.ValidationError({"error": f"less than {QUANTITY_LEVEL}"})
         if self.request.user.balance - float(self.request.data['quantity_usdt']) < 0:
             raise serializers.ValidationError({"error": "not enough balance"})
         else:
@@ -99,10 +103,34 @@ class LimitOrderCreate(CreateAPIView):
 
     def perform_create(self, serializer):
         # t = TemperatureData.objects.get(id=1)
-        serializer.save(owner=self.request.user,
-                        position_size=self.request.data['leverage']
+        # print(self.request.user)
+        if float(self.request.data['quantity_usdt']) < QUANTITY_LEVEL:
+            raise serializers.ValidationError(
+                {"error": f"less than {QUANTITY_LEVEL}"})
+        elif self.request.user.balance - float(
+                self.request.data['quantity_usdt']) < 0:
+            raise serializers.ValidationError({"error": "not enough balance"})
+        else:
+            update_balance(self.request.user.id, self.request.user.balance - float(self.request.data['quantity_usdt']))
+            serializer.save(owner=self.request.user,
+                            position_size=self.request.data['leverage']
                                       * float(self.request.data['quantity_usdt'])
                                       / float(self.request.data['price']))
+
+
+class CancelLimitOrder(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = (request.data)
+        order = LimitOrder.objects.get(id=data['id'], owner=request.user, is_active=True)
+        if order:
+            # position_size = min(position.position_size, float(data['position_size']))
+            # pnl = (-1 if position.type_of_pos == "SHORT" else 1 ) * get_pnl(position_size, position.open_price, current_price)
+            update_balance(request.user.id, request.user.balance + order.quantity_usdt)
+            order.delete()
+            return Response({"success": "bro"})
+        return Response({'error': "not found"})
 
 
 class LimitOrderList(ListAPIView):
@@ -117,6 +145,7 @@ class LimitOrderList(ListAPIView):
         for the currently authenticated user.
         """
         user = self.request.user
+
         return LimitOrder.objects.filter(owner=user.id)
 
 
@@ -151,21 +180,6 @@ class CloseMarketPosition(APIView):
         }
 
         return Response({"nothing": "bro"})
-
-
-@api_view(["post"])
-@permission_classes((IsAuthenticated,))
-def close_order(request, id):
-    try:
-        order = Position.objects.get(id=id, owner=request.user.id)
-        if order:
-            order.is_active = False
-            order.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({'error': "not found"})
-    except Exception as e:
-        return Response({"error": str(e)})
 
 
 class OrderList(ListAPIView):
