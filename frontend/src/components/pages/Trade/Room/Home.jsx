@@ -122,6 +122,24 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
     });
 
 
+
+
+    useWebSocket("ws://localhost:8000" + "/ws/gays/", {
+      onOpen: () => {
+        
+         console.log('WebSocket connection 2 established.');
+        },
+        onClose: () => console.log('WebSocket connection closed.'),
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages1(event),
+      
+      });
+
+  function processMessages1(event){
+    console.log(event)
+  }
+
+
     const processMessages = (event) => {
       const response = JSON.parse(event.data)['data'];
       if (response.e === "24hrTicker") {

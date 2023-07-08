@@ -16,7 +16,7 @@ class LimitOrderListSerializer(ModelSerializer):
         model = LimitOrder
         # owner = serializers.ReadOnlyField(source='owner.username')
 
-        fields = ['id', 'created', 'ticker', 'quantity_usdt', 'is_active', "price", "leverage", "type_of_order"]
+        fields = ['id', 'created', 'ticker', 'quantity_usdt', 'is_active', "price", "leverage", "type_of_order", "type_of_pos", "position_size"]
 
 
 class CreatePositionSerializer(ModelSerializer):

@@ -123,7 +123,7 @@ class CancelLimitOrder(APIView):
 
     def post(self, request):
         data = (request.data)
-        order = LimitOrder.objects.get(id=data['id'], owner=request.user, is_active=True)
+        order = LimitOrder.objects.filter(id=data['id'], owner=request.user, is_active=True).first()
         if order:
             # position_size = min(position.position_size, float(data['position_size']))
             # pnl = (-1 if position.type_of_pos == "SHORT" else 1 ) * get_pnl(position_size, position.open_price, current_price)

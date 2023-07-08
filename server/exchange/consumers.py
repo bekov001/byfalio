@@ -5,9 +5,12 @@ import threading
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import WebsocketConsumer, \
     AsyncWebsocketConsumer
+from djangochannelsrestframework.permissions import IsAuthenticated
 
-from .models import Position
-from .serializers import PositionListSerializer
+from .models import Position, LimitOrder
+from .serializers import PositionListSerializer, LimitOrderListSerializer, \
+    CreatePositionSerializer
+from channels.layers import get_channel_layer
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -93,11 +96,33 @@ class PriceConsumer(AsyncWebsocketConsumer):
         # await self.send(text_data=json.dumps({ 'to': 'Client' })
 
 
+def open_pos(data):
+    for el in LimitOrder.objects.filter(id__in=data, is_active=True):
+        # ['ticker', 'quantity_usdt', 'is_active', 'closed', "leverage", "type_of_pos"]
+        pos = Position(
+            owner=el.owner,
+            ticker=el.ticker,
+            quantity_usdt=el.quantity_usdt,
+            leverage=el.leverage,
+            type_of_pos=el.type_of_pos,
+            open_price=el.price,
+            position_size=el.position_size
+        )
+        pos.save()
+        print("success")
+        el.delete()
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)("gay",
+                                            {"type": "chat.message", "text": "gay"})
+
+
 class OrderConsumer(WebsocketConsumer):
+    """private class for ROBOTO"""
     def get_chart(self):
         # serializer = OrderListSerializer()
-        queryset = Position.objects.filter(is_active=True)
-        data = PositionListSerializer(queryset, many=True).data
+        queryset = LimitOrder.objects.filter(is_active=True)
+        data = LimitOrderListSerializer(queryset, many=True).data
         return data
 
     def connect(self):
@@ -105,6 +130,45 @@ class OrderConsumer(WebsocketConsumer):
         self.accept()
         self.send(text_data=json.dumps({"message": data}))
 
+    def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        # print(text_data_json)
+        message = text_data_json["message"]
+        if message == "open_pos":
+            open_pos(text_data_json['data'])
+        data = self.get_chart()
+        self.send(text_data=json.dumps({"message": data}))
+        #
+        # # Send message to room group
+        # async_to_sync(self.channel_layer.group_send)(
+        #     self.room_group_name, {"type": "chat_message", "message": message}
+
+
+class GayConsumer(WebsocketConsumer):
+    def connect(self):
+        async_to_sync(self.channel_layer.group_add)("gay",
+                                                    self.channel_name)
+        self.accept()
+        async_to_sync(self.channel_layer.group_send)(
+            "gay",
+            {
+                "type": "chat.message",
+                "text": 'gay',
+            },
+        )
+        # self.send(text_data=json.dumps({"message": data}))
+
+    # def receive(self, text_data):
+    #     async_to_sync(self.channel_layer.group_send)(
+    #         "chat",
+    #         {
+    #             "type": "chat.message",
+    #             "text": text_data,
+    #         },
+    #     )
+
+    def chat_message(self, event):
+        self.send(text_data=event["text"])
 # async def create_ws(on_create, on_message):
 #     from binance.websocket.um_futures.websocket_client import \
 #         UMFuturesWebsocketClient

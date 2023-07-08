@@ -12,7 +12,7 @@ export default function LimitOrder({cancelLimitOrder, limitOrders, tradeHistoryL
                     <div className="df">
                         <span>{order.ticker}</span>
                         <div className="history_main_row_name_status bg_red">
-                            Закрыть Long
+                            Открыть {order.type_of_pos}
                         </div>
                     </div>
                     {/* <div className="history_main_row_name_export" onClick={() => setPnlShow(true)} >
@@ -33,8 +33,8 @@ export default function LimitOrder({cancelLimitOrder, limitOrders, tradeHistoryL
                         <p>Лимитный</p>
                     </div>
                     <div className="history_main_row_stat_li">
-                        <span>Сумма(USDT)</span>
-                        <p>{order.quantity_usdt}</p>
+                        <span>Сумма({order.ticker})</span>
+                        <p>{order.position_size}</p>
                     </div>
                     <div className="history_main_row_stat_li">
                         <span>Цена</span>
