@@ -50,3 +50,17 @@ class ClosingLimitOrder(models.Model):
 
     class Meta:
         ordering = ['created']
+
+
+class HistoryPnl(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='owner',
+                              on_delete=models.CASCADE)
+    position = models.ForeignKey(Position, related_name='pos',
+                                 on_delete=models.CASCADE)
+    time = models.DateTimeField(blank=True, null=True)
+    pnl = models.FloatField()
+    roe = models.FloatField(null=True)
+    position_size = models.FloatField()
+
+    class Meta:
+        ordering = ['time']

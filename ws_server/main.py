@@ -91,8 +91,8 @@ if __name__ == "__main__":
     opening_limits = []
     closing_limits = []
     websocket.enableTrace(True)
-
-    ws = websocket.WebSocketApp("ws://127.0.0.1:8000/ws/orders/",
+    url = "byfalio.herokuapp.com"
+    ws = websocket.WebSocketApp(f"ws://{url}/ws/orders/",
                               on_open=on_open,
                               on_message=on_message,
                               on_error=on_error,

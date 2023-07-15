@@ -7,7 +7,7 @@ from channels.generic.websocket import WebsocketConsumer, \
     AsyncWebsocketConsumer
 from djangochannelsrestframework.permissions import IsAuthenticated
 
-from additional.help import update_balance, get_pnl
+from additional.help import update_balance, get_pnl, update_history_pnl
 from .models import Position, LimitOrder, ClosingLimitOrder
 from .serializers import PositionListSerializer, LimitOrderListSerializer, \
     CreatePositionSerializer, ListClosingLimitOrderSerializer
@@ -114,6 +114,8 @@ def open_pos(data):
             position_size=el.position_size
         )
         pos.save()
+
+
         print("success")
         el.delete()
 
@@ -133,6 +135,7 @@ def close_pos(data):
         update_balance(position.owner.id, position.owner.balance + pnl + (
                     position_size * position.open_price / position.leverage))
         position.position_size -= position_size
+        update_history_pnl(position, position.owner, position_size, pnl)
         if position.position_size == 0:
             elems = ClosingLimitOrder.objects.filter(position=position.id)
             position.is_active = False

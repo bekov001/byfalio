@@ -101,16 +101,9 @@ function Home() {
   const [posTpSl, setPosTpSl] = useState([]);
   const [deleteChart, setDeleteChart] = useState(false);
   const [tickerUrl, setTickerUrl] = useState("btcusdt@kline_1h")
-  // const [deleteChart, setDeleteChart] = useState(false);
+  const [historyPnl, setHistoryPnl] = useState([])
   const {user}= useContext(AuthContext)
-  // const [limitOrders, setMyLimitOrders] = useState([]);
-  // const [balance, setLowPrice] = useState('--');
 
-// useWebSocket(WS_URL + "btcusdt@depth", {
-//  onOpen: () => {
-//     console.log('WebSocket connection established.');
-//    }
-//  }); 
 useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms", {
     onOpen: () => {
       
@@ -130,7 +123,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
         },
         onClose: () => console.log('WebSocket connection klines closed.'),
         shouldReconnect: (closeEvent) => true,
-        onMessage: (event) =>  processMessages(event),
+        onMessage: (event) =>  processKlines(event),
       
       });
 
@@ -160,6 +153,28 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
     updateTp(response)
   }
 
+  function processKlines(event){
+    const response = JSON.parse(event.data)['data'];
+
+    if (response.e === "kline") {
+      const candlestick = response.k;
+      const new_data = {
+        time: (candlestick.t) / 1000,
+        open: parseFloat(candlestick.o),
+        high: parseFloat(candlestick.h),
+        low: parseFloat(candlestick.l),
+        close: parseFloat(candlestick.c)
+      }
+
+      if (new_data.time == kline.slice(-1).time) {
+        const high_price = parseFloat(new_data.high).toFixed(2);
+        const low_price = parseFloat(new_data.low).toFixed(2);
+        setHighPrice(high_price);
+        setLowPrice(low_price);
+        setLastCandlestick(new_data);
+      }}
+  }
+
 
     const processMessages = (event) => {
       const response = JSON.parse(event.data)['data'];
@@ -186,39 +201,6 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
         bids: (groupByTicketSizeBids(response.b.sort((a, b) => a[0] - b[0]).map(data => 
           [parseFloat(data[0]), parseFloat(data[1])]), 1, stepVal))}))
           // setDepth();
-       }  else if (response.e === "kline") {
-        const candlestick = response.k;
-        const new_data = {
-          time: (candlestick.t) / 1000,
-          open: parseFloat(candlestick.o),
-          high: parseFloat(candlestick.h),
-          low: parseFloat(candlestick.l),
-          close: parseFloat(candlestick.c)
-        }
-        const high_price = parseFloat(new_data.high).toFixed(2);
-        const low_price = parseFloat(new_data.low).toFixed(2);
-        setHighPrice(high_price);
-        setLowPrice(low_price);
-        // console.log(new_data)
-        if (kline.length> 0){
-          setLastCandlestick(new_data);
-          
-        }
-
-        // console.log(new_data);
-      
-        // setKline([...kline, new_data]);
-       
-        //  setKline([...kline, new_data]);
-        //  console.log(kline);
-          //  processKline(response.k);
-              // console.log(response.k)
-              // 
-              // kline.update({
-              //  x: candlestick.t,
-              //  y: [candlestick.h, candlestick.o, candlestick.c, candlestick.l]
-              // })
-          // setDepth();
        }
       
       // console.log(response['data'])
@@ -239,33 +221,13 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
         updatePos()
         closeMarketPos()
         updateLimits()
-          // getIndexPrice(setTokenIndexPrice)
-      // }, 100);
-      
-      // getTickerData(setTickerData)
-    // let interval24 = setInterval(() => {
-    //   (checkLimit(limitOrders, indexPrice, openPos))
-    //  }, 1000);
-
-      // getFundingRate(setFundingRate)
-      // let interval1 = setInterval(() => {
-      //     getFundingRate(setFundingRate)
-      // }, 1000);
+        updateHistoryPnl()
       
 
       return () => {
-          // clearInterval(interval);
-          // clearInterval(interval24);
-          // clearInterval(interval1);
+
       };
   }, []);
-
-    // const processMessages1 = (event) => {
-    //   const response = JSON.parse(event.data)['data'];
-    //   setIndexPrice(parseFloat(response.p).toFixed(2))
-    //   // setMarkPrice(parseFloat(response.p).toFixed(2))
-    //   // console.log(response['data'])
-    // };
 
   function openPos(newPos) {
     if (indexPrice != "--") {
@@ -310,6 +272,13 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
     
 }
 
+function updateHistoryPnl(){
+  jwtInterceptor
+  .get(BACKEND_URL + "/exchange/get_history_pnl/").then((response) => {
+    setHistoryPnl(response.data)
+  // console.log(response)
+  })
+}
 function setTpSl(data){
 
   if (data && data.tp) {
@@ -483,6 +452,7 @@ function updateLimits(){
     updatePos()
     getBalance()
     updateLimits()
+    updateHistoryPnl()
     // setBalance(response.data['balance'])
     // console.log("b", response)
   })
@@ -514,7 +484,7 @@ function updateLimits(){
     <div className="wrap">
         <Header tokenPrice={indexPrice} balance={balance}></Header>
         <div className="main">
-            <Sidebar balance={balance} posTpSl={posTpSl} setTpSl={setTpSl} closeLimitPos={closeLimitPos} cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
+            <Sidebar historyPnl={historyPnl} balance={balance} posTpSl={posTpSl} setTpSl={setTpSl} closeLimitPos={closeLimitPos} cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">
             
                 <TokenHeader></TokenHeader>

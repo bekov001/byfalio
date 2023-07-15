@@ -19,4 +19,5 @@ urlpatterns = [
     path("cancel_closing_limit_orders/", views.CancelClosingLimitOrder.as_view()),
     path("create_tp/", views.CreateTpLimitOrder.as_view()),
     path("create_sl/", views.CreateSlLimitOrder.as_view()),
+    path("get_history_pnl/", views.HistoryPnlList.as_view()),
 ]

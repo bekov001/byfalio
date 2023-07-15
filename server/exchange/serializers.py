@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Position, LimitOrder, ClosingLimitOrder
+from .models import Position, LimitOrder, ClosingLimitOrder, HistoryPnl
 
 
 class CreateLimitOrderSerializer(ModelSerializer):
@@ -19,6 +19,17 @@ class CreateClosingLimitOrderSerializer(ModelSerializer):
 
         fields = ['id', 'created', 'is_active', "position_size", "price", 'position']
         # depth = 1
+
+
+class HistoryPnlSerializer(ModelSerializer):
+    """Show History Pnl"""
+    class Meta:
+        model = HistoryPnl
+        # owner = serializers.ReadOnlyField(source='owner.username')
+
+        # fields = '__all__'
+        exclude = ('owner',)
+        depth = 1
 
 
 class ListClosingLimitOrderSerializer(ModelSerializer):

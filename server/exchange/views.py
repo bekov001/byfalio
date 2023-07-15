@@ -19,14 +19,16 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 
-from .models import Position, LimitOrder, ClosingLimitOrder
+from .models import Position, LimitOrder, ClosingLimitOrder, HistoryPnl
 from .serializers import PositionListSerializer, CreatePositionSerializer, \
-    CreateLimitOrderSerializer, LimitOrderListSerializer, ListClosingLimitOrderSerializer, \
-    CreateClosingLimitOrderSerializer
+    CreateLimitOrderSerializer, LimitOrderListSerializer, \
+    ListClosingLimitOrderSerializer, \
+    CreateClosingLimitOrderSerializer, HistoryPnlSerializer
 
 from binance.cm_futures import CMFutures
 
-from additional.help import get_pnl, update_balance
+from additional.help import get_pnl, update_balance, get_roe, \
+    update_history_pnl
 
 QUANTITY_LEVEL = 3
 
@@ -54,17 +56,17 @@ def history(request, pair, time):
         formatting = lambda x: x.strftime("%d %m, %Y")
 
         data = {
-            "1m": [Client.KLINE_INTERVAL_1MINUTE, formatting(today - timedelta(days=3))],
-            "30m": [Client.KLINE_INTERVAL_30MINUTE,  formatting(today - timedelta(days=150))],
+            "1m": [Client.KLINE_INTERVAL_1MINUTE, "2 day ago UTC"],
+            "30m": [Client.KLINE_INTERVAL_30MINUTE,  formatting(today - timedelta(days=120))],
             "1h":  [Client.KLINE_INTERVAL_1HOUR, formatting(today - timedelta(days=200))],
             "4h": [Client.KLINE_INTERVAL_4HOUR, "1 Jan, 2021"],
-            "1d": [Client.KLINE_INTERVAL_1DAY, "1 Jan, 2021"]
+            "1d": [Client.KLINE_INTERVAL_1DAY, "1 Jan, 2020"]
                 }
+
         get_request = client.get_historical_klines(pair,
                                                    data[time][0],
                                                    start_str=data[time][1],
                                                    klines_type=HistoricalKlinesType.FUTURES)
-
         src = []
         for data in get_request:
             src.append(
@@ -325,10 +327,11 @@ class CloseMarketPosition(APIView):
 
             position_size = min(position.position_size, float(data['position_size']))
             pnl = (-1 if position.type_of_pos == "SHORT" else 1 ) * get_pnl(position_size, position.open_price, current_price)
-            request.user.balance += pnl + (position_size * position.open_price/ position.leverage)
-            request.user.save()
+            update_balance(request.user.id, request.user.balance + pnl + (position_size * position.open_price/ position.leverage))
             position.position_size -= position_size
+            update_history_pnl(position, request.user, position_size, pnl)
             if position.position_size == 0:
+
                 position.is_active = False
                 position.closed = dt.now()
 
@@ -358,3 +361,18 @@ class OrderList(ListAPIView):
         """
         user = self.request.user
         return Position.objects.filter(owner=user.id)
+
+
+class HistoryPnlList(ListAPIView):
+    # from django.contrib.auth import get_user_model
+    # User = get_user_model()
+    # queryset = Order.objects.all(request.user)
+    serializer_class = HistoryPnlSerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        return HistoryPnl.objects.filter(owner=user.id)

@@ -68,7 +68,7 @@ export default function Register() {
         <p className='name'>Register</p>
         <p className='error'>{error}</p>
         <input type="tel" maxlength='12' placeholder="Phone" value={phoneNumber}
-                  required
+                  required autocomplete="tel"
                   onChange={event => setPhoneNumber(event.target.value)}/>
 
         <input type="password" placeholder="password" value={password}
@@ -84,7 +84,7 @@ export default function Register() {
         <p className='name'>Register</p>
         <p className='error'>{error}</p>
         <input type="email" placeholder="Email" value={email}
-                  required
+                  required autoComplete='email'
                   onChange={event => setEmail(event.target.value)}/>
         <input type="password" placeholder="password" value={password}
                   required

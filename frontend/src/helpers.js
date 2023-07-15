@@ -156,5 +156,5 @@ export function liqPrice(openPrice, balance, quantity_usdt, position_size, type)
   
 }
 
-// export const BACKEND_URL = "https://byfalio.herokuapp.com";
- export const BACKEND_URL = "http://127.0.0.1:8000";
+export const BACKEND_URL = "https://byfalio.herokuapp.com";
+//  export const BACKEND_URL = "http://127.0.0.1:8000";

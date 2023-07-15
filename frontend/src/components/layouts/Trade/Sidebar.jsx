@@ -4,13 +4,15 @@ import LeadersTable from "../../pages/Trade/LeadersTable/LeadersTable";
 
 import React, { useState} from 'react';
 import { Link } from "react-router-dom";
-function Sidebar({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, closeMarketPos, active_pos, tokenPrice, limitOrders}){
+import Statistics from "../../pages/Trade/Statistics/Statistics";
+function Sidebar({historyPnl, balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, closeMarketPos, active_pos, tokenPrice, limitOrders}){
 
     const [menuLinkId, setMenuLinkId] = useState(4); 
     const hideAll = () => {
         handleTradeHistoryClose();
         handleNewsClose();
         handleLeadersClose();
+        handleStatisticsClose();
     } 
 
     const [tradeHistoryShow, setTradeHistoryShow] = useState(false);
@@ -38,6 +40,20 @@ function Sidebar({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, cl
 
     const handleNewsClose = () => {
         setNewsShow(false);
+        setMenuLinkId(4);
+    }
+
+    const [statiscticsShow, setStatisticsShow] = useState(false);
+
+    const handleStatisticsShow = (e) => {
+     hideAll();
+        e.preventDefault();
+        setMenuLinkId(6);
+        setStatisticsShow(true);
+    }
+
+    const handleStatisticsClose = () => {
+        setStatisticsShow(false);
         setMenuLinkId(4);
     }
 
@@ -108,7 +124,7 @@ function Sidebar({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, cl
                 </a>
             </div>
             <div className="sidebar_menu_link">
-                <a href="">
+                <a onClick={handleStatisticsShow} href="">
                     <img src={menuLinkId==6 ? "img/sidebar/link6_active.svg" : "img/sidebar/link6.svg"} alt="" />
                     <span>Статистика</span>
                 </a>
@@ -117,6 +133,7 @@ function Sidebar({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, cl
             <TradeHistory  balance={balance}  posTpSl={posTpSl} setTpSl={setTpSl} cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeLimitPos={closeLimitPos} closeMarketPos={closeMarketPos} tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
             <News newsShow={newsShow} handleNewsClose={handleNewsClose}></News>
             <LeadersTable leadersShow={leadersShow} handleLeadersClose={handleLeadersClose} ></LeadersTable>
+            <Statistics historyPnl={historyPnl} statiscticsShow={statiscticsShow} handleStatisticsClose={handleStatisticsClose}></Statistics>
     </div>
     );
 }
