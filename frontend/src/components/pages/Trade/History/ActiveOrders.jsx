@@ -4,8 +4,8 @@ import Tpsl from '../../../modals/Trade/History/Tpsl';
 import CloseWith from '../../../modals/Trade/History/CloseWith';
 // import Pnl from 'C:\Users\Home\Desktop\papka\byfal\byfalio_exchange-master\src\components\modals\Trade\History\Pnl.jsx';
 import Pnl from '../../../modals/Trade/History/Pnl';
-import { getPnl, getROE } from '../../../../helpers';
-function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenPrice}){
+import { getPnl, getROE, liqPrice } from '../../../../helpers';
+function ActiveOrders({balance, posTpSl, setTpSl, closeLimitPos, closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenPrice}){
 
     const [cancelAllShow, setCancelAllShow] = useState(false);
     const [tpslShow, setTpslShow] = useState(false);
@@ -25,6 +25,9 @@ function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenP
     const [currentPrice, setCurrentPrice] = useState();
     const [positionId, setPositionId] = useState(0);
     const [positionSize, setPositionSize] = useState(0)
+    const [takeProfit, setTakeProfit] = useState()
+    const [stopLoss, setStopLoss] = useState()
+
 
     function openPnlShow(position){
         
@@ -45,13 +48,38 @@ function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenP
         setCloseWithShow(true)
         setPositionId(ID)
         setTicker(ticker)
-        const pnl = getPnl((type_of_pos === "SHORT" ? -1 : 1) * amount, open_price, tokenPrice)
-        setPnlProfit(pnl)
+        setPositionType(type_of_pos)
+        
+        // setPnlProfit(pnl)
         setCurrentPrice(tokenPrice);
         setPositionSize(amount)
         setOpenPrice(open_price); 
 
     }
+
+    function openTpSlShow(ID, open_price, leverage, amount, type_of_pos){
+        setTpslShow(true)
+        if (posTpSl[ID] && posTpSl[ID].tp) {setTakeProfit(posTpSl[ID].tp)}
+        else {
+            setTakeProfit('')
+        }
+
+        if (posTpSl[ID] && posTpSl[ID].sl) {setStopLoss(posTpSl[ID].sl)
+        } else {
+            setStopLoss('')
+        }
+        setLeverage(leverage)
+        setPositionId(ID)
+        setPositionType(type_of_pos)
+        // setTicker(ticker)
+        // const pnl = getPnl((type_of_pos === "SHORT" ? -1 : 1) * amount, open_price, tokenPrice)
+        // setPnlProfit(pnl)
+        // setCurrentPrice(tokenPrice);
+        setPositionSize(amount)
+        setOpenPrice(open_price); 
+
+    }
+
     return (
         <div className={tradeHistoryActiveOrdersShow ? "sidebar_menu_main_history_active_order " : "sidebar_menu_main_history_active_order hidden"}>
 
@@ -100,12 +128,17 @@ function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenP
                     </div>
                     <div className="active_order_info_column active_order_info_column_liquidation">
                         <span>Ориент. цена ликвидации</span>
-                        <p>--</p>
+                        <p>{liqPrice(position.open_price, balance, position.quantity_usdt, position.position_size, position.type_of_pos).toFixed(2)}</p>
                     </div>
                 </div>
                 <div className="active_order_btns">
-                    <div onClick={() => setTpslShow(true)} className="active_order_btn active_order_tpsl">
-                        Установить TP/SL
+                    <div onClick={() => openTpSlShow(position.id, position.open_price, position.leverage, position.position_size, position.type_of_pos)} className="active_order_btn active_order_tpsl">
+                        {(posTpSl[position.id] ? 
+                        (<div style={{display:'inline-block'}}>
+                        <div className='color_green' style={{display:'inline-block'}}>
+                        {(posTpSl[position.id].tp ? posTpSl[position.id].tp : "--")}</div><div className='color_red' style={{display:'inline-block'}}>{"/" + (posTpSl[position.id].sl ? posTpSl[position.id].sl: "--")}</div></div>)
+                        
+                        : "Установить TP/SL")}
                     </div>
                     <div onClick={() => openCloseShow(position.id, position.ticker, position.position_size, position.open_price, position.type_of_pos)} className="active_order_btn active_order_close">
                         Закрыть с помощью
@@ -122,8 +155,8 @@ function ActiveOrders({closeMarketPos, tradeHistoryActiveOrdersShow, pos, tokenP
     
         
         <CloseAll cancelAllShow={cancelAllShow} setCancelAllShow={setCancelAllShow}></CloseAll>
-        <Tpsl tpslShow={tpslShow} setTpslShow={setTpslShow}></Tpsl>
-        <CloseWith closeMarketPos={closeMarketPos} positionId={positionId} currentPrice={currentPrice} ticker={ticker} pnlProfit={pnlProfit}  openPrice={openPrice}  positionSize={positionSize} closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
+        <Tpsl  takeProfit={takeProfit} stopLoss={stopLoss} positionType={positionType} size={positionSize} setTpSl={setTpSl} leverage={leverage} openPrice={openPrice} positionId={positionId} tpslShow={tpslShow} setTpslShow={setTpslShow}></Tpsl>
+        <CloseWith positionType={positionType} closeLimitPos={closeLimitPos} closeMarketPos={closeMarketPos} positionId={positionId} currentPrice={currentPrice} ticker={ticker} pnlProfit={pnlProfit}  openPrice={openPrice}  positionSize={positionSize} closeWithShow={closeWithShow} setCloseWithShow={setCloseWithShow}></CloseWith>
         <Pnl currentPrice={currentPrice} ticker={ticker} openPrice={openPrice} leverage={leverage} pnlProfit={pnlProfit} positionType={positionType} pnlPercentage={pnlPercentage} pnlShow={pnlShow} setPnlShow={setPnlShow}></Pnl>
         </div>
     );

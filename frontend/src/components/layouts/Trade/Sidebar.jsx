@@ -4,7 +4,7 @@ import LeadersTable from "../../pages/Trade/LeadersTable/LeadersTable";
 
 import React, { useState} from 'react';
 import { Link } from "react-router-dom";
-function Sidebar({cancelLimitOrder, closeMarketPos, active_pos, tokenPrice, limitOrders}){
+function Sidebar({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, closeMarketPos, active_pos, tokenPrice, limitOrders}){
 
     const [menuLinkId, setMenuLinkId] = useState(4); 
     const hideAll = () => {
@@ -114,7 +114,7 @@ function Sidebar({cancelLimitOrder, closeMarketPos, active_pos, tokenPrice, limi
                 </a>
             </div>
         </div>
-            <TradeHistory cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
+            <TradeHistory  balance={balance}  posTpSl={posTpSl} setTpSl={setTpSl} cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeLimitPos={closeLimitPos} closeMarketPos={closeMarketPos} tokenPrice={tokenPrice} pos={active_pos} tradeHistoryShow={tradeHistoryShow} handleTradeHistoryClose={handleTradeHistoryClose}></TradeHistory>
             <News newsShow={newsShow} handleNewsClose={handleNewsClose}></News>
             <LeadersTable leadersShow={leadersShow} handleLeadersClose={handleLeadersClose} ></LeadersTable>
     </div>

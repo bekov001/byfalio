@@ -36,7 +36,10 @@ let tokensData = JSON.parse(localStorage.getItem("tokens"));
   },
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response === undefined){
+      Promise.reject("WRONG URL");
+    }
+    else if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const authData = JSON.parse(localStorage.getItem("tokens"));
       const payload = {

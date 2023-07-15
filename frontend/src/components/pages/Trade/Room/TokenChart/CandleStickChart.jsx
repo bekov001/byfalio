@@ -47,6 +47,8 @@ background: {
 		secondsVisible: false,
 	 },
 }
+
+
     useEffect(
 		() => {
 				

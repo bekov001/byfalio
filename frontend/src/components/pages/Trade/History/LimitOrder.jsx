@@ -8,11 +8,11 @@ export default function LimitOrder({cancelLimitOrder, limitOrders, tradeHistoryL
             <div className="history_main_row_w_blur"></div>
             
 
-                {limitOrders ? limitOrders.map(order => order.is_active ? <div className="history_main_row" key={order.id}> <div className="history_main_row_name">
+                {limitOrders ? limitOrders.map((order, index) => order.is_active ? <div className="history_main_row" key={index}> <div className="history_main_row_name">
                     <div className="df">
                         <span>{order.ticker}</span>
                         <div className="history_main_row_name_status bg_red">
-                            Открыть {order.type_of_pos}
+                            {!order.limit_id ? "Открыть": "Закрыть"} {order.type_of_pos}
                         </div>
                     </div>
                     {/* <div className="history_main_row_name_export" onClick={() => setPnlShow(true)} >
@@ -30,7 +30,7 @@ export default function LimitOrder({cancelLimitOrder, limitOrders, tradeHistoryL
                 <div className="history_main_row_stat_ul">
                     <div className="history_main_row_stat_li">
                         <span>Тип ордера</span>
-                        <p>Лимитный</p>
+                        <p>{order.type_of_order}</p>
                     </div>
                     <div className="history_main_row_stat_li">
                         <span>Сумма({order.ticker})</span>
@@ -47,7 +47,7 @@ export default function LimitOrder({cancelLimitOrder, limitOrders, tradeHistoryL
                 </div>
 
                 <div className="active_order_btns">
-                    <div onClick={() => cancelLimitOrder(order.id)} className="active_order_btn active_order_close">
+                    <div onClick={() => cancelLimitOrder(order)} className="active_order_btn active_order_close">
                         Отменить
                     </div>
                 </div> </div>

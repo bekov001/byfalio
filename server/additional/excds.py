@@ -1,9 +1,7 @@
-import logging
-from binance.cm_futures import CMFutures
-from binance.lib.utils import config_logging
+from math import floor
 
-config_logging(logging, logging.DEBUG)
+new_balance = 1769.1441853752117
+op = 1769.144185375212
+a = floor(new_balance * 1000) / 1000
 
-cm_futures_client = CMFutures()
-
-print(cm_futures_client.index_price_klines("BTCUSD", "1h", **{"limit": 1000}))
+print(a)

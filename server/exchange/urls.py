@@ -13,5 +13,10 @@ urlpatterns = [
     path("open_limit_order/", views.LimitOrderCreate.as_view()),
     path("limit_orders/", views.LimitOrderList.as_view()),
     path("close_market_position/", views.CloseMarketPosition.as_view()),
-    path("cancel_limit_order/", views.CancelLimitOrder.as_view())
+    path("cancel_limit_order/", views.CancelLimitOrder.as_view()),
+    path("close_limit_position/", views.CreateClosingLimitOrder.as_view()),
+    path("closing_limit_orders/", views.ClosingLimitOrderList.as_view()),
+    path("cancel_closing_limit_orders/", views.CancelClosingLimitOrder.as_view()),
+    path("create_tp/", views.CreateTpLimitOrder.as_view()),
+    path("create_sl/", views.CreateSlLimitOrder.as_view()),
 ]

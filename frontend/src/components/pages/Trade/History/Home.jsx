@@ -6,7 +6,7 @@ import ActiveOrdersV2 from './ActiveOrdersV2';
 import LimitOrder from './LimitOrder';
 
 
-function Home({cancelLimitOrder, limitOrders, closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
+function Home({balance, posTpSl, setTpSl, closeLimitPos, cancelLimitOrder, limitOrders, closeMarketPos, tradeHistoryShow,handleTradeHistoryClose, pos, tokenPrice}){
 
     const [tradeHistoryActiveOrdersShow, setTradeHistoryActiveOrdersShow] = useState(true);
     const [tradeHistoryClosedShow, setTradeHistoryClosedShow] = useState(false);
@@ -42,14 +42,14 @@ function Home({cancelLimitOrder, limitOrders, closeMarketPos, tradeHistoryShow,h
                     <div onClick={handleTradeLimitOrderShow} className={tradeLimitOrderShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"}>
                         Лимитные
                     </div>
-                    <div onClick={handleTradeHistoryClosedShow} className={tradeHistoryClosedShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"}>
+                    {/* <div onClick={handleTradeHistoryClosedShow} className={tradeHistoryClosedShow ? "sidebar_menu_main_history_menu_btn sidebar_menu_main_history_menu_btn_active" : "sidebar_menu_main_history_menu_btn"}>
                         Закрытые
-                    </div>
+                    </div> */}
                 </div>
 
                 <ClosedOrders tradeHistoryClosedShow={tradeHistoryClosedShow}></ClosedOrders>
                 <LimitOrder cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} tradeHistoryLimitOrderShow={tradeLimitOrderShow}></LimitOrder>
-                <ActiveOrders closeMarketPos={closeMarketPos}tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
+                <ActiveOrders  balance={balance}  posTpSl={posTpSl} setTpSl={setTpSl} closeLimitPos={closeLimitPos} closeMarketPos={closeMarketPos}tokenPrice={tokenPrice} pos={pos} tradeHistoryActiveOrdersShow={tradeHistoryActiveOrdersShow}></ActiveOrders>
                 {/* <ActiveOrdersV2  tradeHistoryActiveOrdersShow={tradeLimitOrderShow}></ActiveOrdersV2> */}
             </div>
         </div>

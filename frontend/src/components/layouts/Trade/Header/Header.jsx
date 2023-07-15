@@ -91,7 +91,7 @@ function Header(props){
             <div className="overview_active">
                 <div className="overview_active_balance">
                     <div className="overview_active_balance_usdt">
-                    {balance ? balance.toFixed(2) : 0} USDT
+                    {balance ? balance.toFixed(3) : 0} USDT
                     </div>
                     <div className="overview_active_balance_btc">
                     ≈{balance ? (balance / tokenPrice).toFixed(6): 0 } BTC

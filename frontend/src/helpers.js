@@ -146,5 +146,15 @@ export function getROE(quantity_usdt, position_size, open_price, tokenPrice){
     return (getPnl(position_size, open_price, tokenPrice, true) / quantity_usdt) * 100
 }
 
+export function liqPrice(openPrice, balance, quantity_usdt, position_size, type){
+  if (type === "LONG"){
+    return Number(openPrice) - Number(balance + quantity_usdt) / Number(position_size)
+  } else {
+    return Number(openPrice) + Number(balance + quantity_usdt) / Number(position_size)
+  }
+  // console.log(openPrice, balance, quantity_usdt, position_size)
+  
+}
+
 // export const BACKEND_URL = "https://byfalio.herokuapp.com";
  export const BACKEND_URL = "http://127.0.0.1:8000";

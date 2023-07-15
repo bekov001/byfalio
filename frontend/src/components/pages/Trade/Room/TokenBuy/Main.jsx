@@ -72,7 +72,7 @@ function Main({openPos, balance, openLimitPos, indexPrice}){
       }
 
     function changeValue(percent){
-        setSumm(balance * percent / 100)
+        setSumm(Math.floor((balance * percent / 100) * 1000) / 1000 )
     }
     return (
         <div className="token_buy">

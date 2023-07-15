@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import Header from '../../../layouts/Trade/Header/Header';
 import Sidebar from '../../../layouts/Trade/Sidebar';
 import TokenHeader from './TokenHeader';
@@ -10,14 +10,10 @@ import { groupByTicketSize, addTotalSums, addDepths, getMaxTotalSum, BACKEND_URL
 import axios from 'axios';
 import Positions from './Positions';
 import jwtInterceptor from '../../../../shared/jwtInterceptor';
-// import {  jwtInterceptor } from '../../../shared/jwtInterceptor'
+import AuthContext from '../../../../shared/AuthContext';
 
-function processKline(kline){
-  console.log(kline)
-}
-
-function getKlines(setKlines, setIsLoading){
-  const apiUrl = BACKEND_URL + '/exchange/history/btcusdt/1h/';
+function getKlines(setKlines, setIsLoading, time){
+  const apiUrl = BACKEND_URL + '/exchange/history/btcusdt/' + time + "/";
     axios.get(apiUrl).then((resp) => {
       setKlines(resp.data.data.map((element) => {
         return {
@@ -102,6 +98,11 @@ function Home() {
   const [highPrice, setHighPrice] = useState('--');
   const [lowPrice, setLowPrice] = useState('--');
   const [isLoading, setIsLoading] = useState(true);
+  const [posTpSl, setPosTpSl] = useState([]);
+  const [deleteChart, setDeleteChart] = useState(false);
+  const [tickerUrl, setTickerUrl] = useState("btcusdt@kline_1h")
+  // const [deleteChart, setDeleteChart] = useState(false);
+  const {user}= useContext(AuthContext)
   // const [limitOrders, setMyLimitOrders] = useState([]);
   // const [balance, setLowPrice] = useState('--');
 
@@ -110,7 +111,7 @@ function Home() {
 //     console.log('WebSocket connection established.');
 //    }
 //  }); 
-useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/btcusdt@kline_1h", {
+useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms", {
     onOpen: () => {
       
        console.log('WebSocket connection established.');
@@ -122,21 +123,41 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
     });
 
 
-
-
-    useWebSocket("ws://localhost:8000" + "/ws/gays/", {
+    useWebSocket(socketUrl + tickerUrl, {
       onOpen: () => {
         
+         console.log('WebSocket connection klines established.');
+        },
+        onClose: () => console.log('WebSocket connection klines closed.'),
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event),
+      
+      });
+
+
+
+
+    const { sendMessage} = useWebSocket("ws://localhost:8000" + "/ws/gays/", {
+      onOpen: () => {
+        
+         
+         sendMessage(user.user_id);
          console.log('WebSocket connection 2 established.');
         },
-        onClose: () => console.log('WebSocket connection closed.'),
+        onClose: () => console.log('WebSocket connection 2 closed.'),
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) =>  processMessages1(event),
       
       });
 
+      
+
   function processMessages1(event){
-    console.log(event)
+    const response = JSON.parse(event.data)['data'];
+    setLimitOrders(response)
+    updatePos()
+    getBalance()
+    updateTp(response)
   }
 
 
@@ -153,7 +174,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
                 
        setIndexPrice(data)
       }
-       else if (response[0] && response[0].e === 'markPriceUpdate') {
+       else if (response && response[0] !== undefined && response[0].e === 'markPriceUpdate') {
         //  console.log(response);
         const mark_price = response.find(item => item.s === "BTCUSDT")
         // console.log(mark_price)
@@ -203,11 +224,18 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
       // console.log(response['data'])
     };
 
-    // useEffect
+    function updateChart(time){
+      console.log(time)
+      setIsLoading(true)
+      setTickerUrl("btcusdt@kline_" + time)
+      // setDeleteChart(true)
+      getKlines(setKline, setIsLoading, time)
+
+    }
+
     useEffect(() => {
-      // let interval = setInterval(() => {
         getBalance()
-        getKlines(setKline, setIsLoading)
+        getKlines(setKline, setIsLoading, "1h")
         updatePos()
         closeMarketPos()
         updateLimits()
@@ -262,46 +290,124 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms/b
 
 
 
-
-  function closeMarketPos(newPos) {
-    
-      const payload = {
-        // type_of_pos: newPos.type_of_pos,
-        // leverage: newPos.leverage,
-        // quantity_usdt: newPos.quantity_usdt,
-        // ticker: "BTCUSDT",
-      }
-    // console.log('pushed', payload)
-      jwtInterceptor
-      .post(BACKEND_URL + "/exchange/close_market_position/", payload).then((response) => {
-        getBalance()
-      }
-          
-      )
-      
-    
-      
-  }
   
   function openLimitPos(newPos) {
     const payload = {
       type_of_pos: newPos.type_of_pos,
-      type_of_order: "LIMIT",
       leverage: newPos.leverage,
       quantity_usdt: newPos.quantity_usdt,
       price: newPos.limit_price,
       ticker: "BTCUSDT",
     }
-    console.log(payload)
+    // console.log(payload)
 
-    // setLimitOrders([...limitOrders, payload])
-    // co
     jwtInterceptor
     .post(BACKEND_URL + "/exchange/open_limit_order/", payload).then((response) => {
       updateLimits()
+      updatePos()
       getBalance()
     })
     
+}
+
+function setTpSl(data){
+
+  if (data && data.tp) {
+    
+    const payload = {
+      position: Number(data.id),
+      position_size: Number(data.size),
+      price: Number(data.tp)
+  }
+
+  jwtInterceptor
+  .post(
+  BACKEND_URL + "/exchange/create_tp/", payload).then((response) => {
+    updateLimits()
+  })
+}  
+if (data && data.sl) {
+  const payload = {
+    position: Number(data.id),
+    position_size: Number(data.size),
+    price: Number(data.sl)
+}
+
+jwtInterceptor
+.post(
+BACKEND_URL + "/exchange/create_sl/", payload).then((response) => {
+  updateLimits()
+})
+}
+}
+function closeLimitPos(position){
+ 
+  if (position){
+    const payload = {
+      position: Number(position.id),
+      position_size: Number(position.size),
+      price: Number(position.price)
+  }
+    console.log(payload)
+  
+  jwtInterceptor
+.post(
+BACKEND_URL + "/exchange/close_limit_position/",
+  payload
+
+).then(
+(response) => {
+  updatePos()
+  getBalance()
+  updateLimits()
+  // setBalance(response.data['balance'])
+  // console.log("b", response)
+})
+}
+}
+
+
+function updateTp(a){
+  jwtInterceptor
+    .get(BACKEND_URL + "/exchange/closing_limit_orders/")
+      .then((response) => {
+        // console.log(response.data)
+        const b =  (response.data).map((item) => {
+          return {
+            created: item.created,
+            limit_id: item.id,
+            is_active: true,
+            position_size: item.position_size,
+            price: item.price,
+            ticker: item.position.ticker,
+            type_of_pos:  item.position.type_of_pos,
+            type_of_order: item.type_of_order,
+            positionId: item.position.id
+          }
+        })
+
+        let tpSl = {}
+        b.forEach((item) => {
+          if (item.type_of_order === "TAKE-PROFIT"){
+            tpSl[item.positionId] = { ...tpSl[item.positionId],
+              tp: item.price
+            }  
+          } else if (item.type_of_order === "STOP-LOSS") {
+            tpSl[item.positionId] = { ...tpSl[item.positionId],
+              sl: item.price
+
+            }  
+          }
+          
+        })
+        console.log(tpSl);
+
+        setPosTpSl(tpSl);
+        const limits = [...new Set([...a, ...b])];
+        
+
+        setLimitOrders(limits);
+      });
 }
 
 
@@ -309,9 +415,14 @@ function updateLimits(){
   jwtInterceptor
   .get(BACKEND_URL + "/exchange/limit_orders/")
     .then((response) => {
-      setLimitOrders(response.data);
+      
+      // setLimitOrders(response.data);
       // setMyPos(response.data);
-      // console.log(myPos);
+      let limits = (response.data);
+      setLimitOrders(limits);
+      // console.log(limits)
+      updateTp(limits)
+      
     });
 }
 
@@ -327,16 +438,29 @@ function updateLimits(){
   }
 
 
-  function cancelLimitOrder(id){
-    jwtInterceptor
-    .post(BACKEND_URL + "/exchange/cancel_limit_order/", {id: id})
-      .then((response) => {
-        // // console.log(response.data);
-        // setMyPos(response.data);
-        // console.log(response);
-        updateLimits()
-        getBalance()
-      });
+  function cancelLimitOrder(order){
+    if(order.limit_id){
+        console.log("a", order)
+        jwtInterceptor
+        .post(BACKEND_URL + "/exchange/cancel_closing_limit_orders/", {id: order.limit_id})
+          .then((response) => {
+            // // console.log(response.data);
+            // setMyPos(response.data);
+            // console.log(response);
+            updateLimits()
+          });
+    } else {
+      jwtInterceptor
+      .post(BACKEND_URL + "/exchange/cancel_limit_order/", {id: order.id})
+        .then((response) => {
+          // // console.log(response.data);
+          // setMyPos(response.data);
+          // console.log(response);
+          updateLimits()
+          getBalance()
+        });
+    }
+   
   }
 
 
@@ -358,6 +482,7 @@ function updateLimits(){
   (response) => {
     updatePos()
     getBalance()
+    updateLimits()
     // setBalance(response.data['balance'])
     // console.log("b", response)
   })
@@ -389,12 +514,12 @@ function updateLimits(){
     <div className="wrap">
         <Header tokenPrice={indexPrice} balance={balance}></Header>
         <div className="main">
-            <Sidebar cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
+            <Sidebar balance={balance} posTpSl={posTpSl} setTpSl={setTpSl} closeLimitPos={closeLimitPos} cancelLimitOrder={cancelLimitOrder} limitOrders={limitOrders} closeMarketPos={closeMarketPos} active_pos={myPos} tokenPrice={markPrice}></Sidebar>
             <div className="main_row">
             
                 <TokenHeader></TokenHeader>
                 <div className="token_wrap sidebar_active">
-                    <TokenChart isLoading={isLoading} highPrice={highPrice} lowPrice={lowPrice}
+                    <TokenChart deleteChart={deleteChart} updateChart={updateChart} isLoading={isLoading} highPrice={highPrice} lowPrice={lowPrice}
                     newData={lastCandlestick} kline={kline}></TokenChart>
                     <TokenOrders stepVal={stepVal} setStepVal={setStepVal} depth={depth} flagStateLong={flagStateLong}tokenMarkPrice={markPrice}  tokenIndexPrice={indexPrice} ></TokenOrders>
                     <TokenBuy openLimitPos={openLimitPos} indexPrice={indexPrice} balance={balance} openPos={openPos}></TokenBuy>
