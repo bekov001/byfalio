@@ -1,3 +1,3 @@
 release: python server/manage.py migrate
 
-web: daphne server/server.asgi:application --port $PORT --bind 0.0.0.0
+web: cd server && daphne server.asgi:application --port $PORT --bind 0.0.0.0
