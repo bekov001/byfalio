@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'exchange',
+    'exchange.apps.ExchangeConfig',
     'authorization.apps.AuthorizationConfig',
 'corsheaders',
     # "whitenoise.runserver_nostatic",
