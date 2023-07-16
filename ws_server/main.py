@@ -4,14 +4,6 @@ import websocket
 import _thread
 import time
 import rel
-#
-#     config_logging(logging, logging.DEBUG)
-#
-#     cm_futures_client = CMFutures()
-#     get_request = (cm_futures_client.index_price_klines(pair[:-1], time,
-#                                                **{"limit": 999}))
-from binance.um_futures import UMFutures
-from websocket import create_connection
 
 
 def colorful(data):
