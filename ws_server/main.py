@@ -50,11 +50,13 @@ def on_message1(api_ws, message):
                 opened += [i['id']]
 
     for limit in closing_limits:
+        print(limit)
         actual_price = request[limit['position']['ticker']]
         if limit['position']['type_of_pos'] == "LONG":
             if limit['type_of_order'] in ["TAKE-PROFIT", "LIMIT"] and float(
                     limit['price']) <= float(actual_price):
                 closed += [limit['id']]
+
             elif limit['type_of_order'] == "STOP-LOSS" and float(
                     limit['price']) >= float(actual_price):
                 closed += [limit['id']]
@@ -62,6 +64,7 @@ def on_message1(api_ws, message):
             if limit['type_of_order'] in ["TAKE-PROFIT", "LIMIT"] and float(
                     limit['price']) >= float(actual_price):
                 closed += [limit['id']]
+                # print(closed)
             elif limit['type_of_order'] == "STOP-LOSS" and float(
                     limit['price']) <= float(actual_price):
                 closed += [limit['id']]

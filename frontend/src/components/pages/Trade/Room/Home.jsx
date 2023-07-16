@@ -130,7 +130,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
 
 
 
-    const { sendMessage} = useWebSocket("ws://localhost:8000" + "/ws/gays/", {
+    const { sendMessage} = useWebSocket("ws://byfalio.herokuapp.com" + "/ws/gays/", {
       onOpen: () => {
         
          
@@ -166,12 +166,14 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
         low: parseFloat(candlestick.l),
         close: parseFloat(candlestick.c)
       }
-
-      if (new_data.time == kline.slice(-1).time) {
-        const high_price = parseFloat(new_data.high).toFixed(2);
+      
+      const high_price = parseFloat(new_data.high).toFixed(2);
         const low_price = parseFloat(new_data.low).toFixed(2);
         setHighPrice(high_price);
         setLowPrice(low_price);
+        
+      if (new_data.time == kline.slice(-1).time) {
+        
         setLastCandlestick(new_data);
       }}
   }

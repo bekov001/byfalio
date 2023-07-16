@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState, useMemo} from 'react'
 
 export default function Statistics({historyPnl, statiscticsShow, handleStatisticsClose}) {
+const [historyData, setHistoryData] = useState(historyPnl)
+const history = useMemo(() => {setHistoryData(historyPnl)}, [historyPnl])
   return (
     <div className={statiscticsShow ? "sidebar_menu_main" : "sidebar_menu_main hidden"} >
 
@@ -11,9 +13,9 @@ export default function Statistics({historyPnl, statiscticsShow, handleStatistic
             <img className='sidebar_menu_main_news_head_btn_close' onClick={handleStatisticsClose} src="img/close.svg" alt=""/>
         </div>
         <div className="sidebar_menu_main_news_items">
-        {historyPnl ?
-            historyPnl.reverse().map((pos) => 
-            <div className="sidebar_menu_main_news_item">
+        {historyData ?
+            historyData.map((pos) => 
+            <div className="sidebar_menu_main_news_item" key={pos.id}>
                 <span style={{color:'white'}}>Perpetual {pos.position.leverage}x</span>
                 <h5>{pos.position.ticker}</h5>
                 <p style={{
