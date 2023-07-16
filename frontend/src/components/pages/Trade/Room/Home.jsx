@@ -151,6 +151,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
     updatePos()
     getBalance()
     updateTp(response)
+    updateHistoryPnl()
   }
 
   function processKlines(event){

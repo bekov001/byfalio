@@ -319,7 +319,7 @@ class CloseMarketPosition(APIView):
         get_request = (
             futures_client.mark_price(symbol=request.data["ticker"]))
         current_price = float(get_request['markPrice'])
-        position = Position.objects.get(id=data['id'], owner=request.user, is_active=True)
+        position = Position.objects.filter(id=data['id'], owner=request.user, is_active=True).first()
         if position:
             orders = ClosingLimitOrder.objects.filter(position=position.id,
                                                      owner=request.user)

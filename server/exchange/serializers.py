@@ -67,3 +67,14 @@ class PositionListSerializer(ModelSerializer):
                   'is_active', 'closed', "open_price", "leverage",
                   "type_of_pos", "position_size"]
 
+
+class RobotoPositionSerializer(ModelSerializer):
+    class Meta:
+        model = Position
+        # owner = serializers.ReadOnlyField(source='owner.username')
+        fields = "__all__"
+        depth = 1
+        # fields = ['id', 'created', 'ticker', 'quantity_usdt',
+        #           'is_active', 'closed', "open_price", "leverage",
+        #           "type_of_pos", "position_size"]
+

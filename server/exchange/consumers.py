@@ -10,7 +10,8 @@ from djangochannelsrestframework.permissions import IsAuthenticated
 from additional.help import update_balance, get_pnl, update_history_pnl
 from .models import Position, LimitOrder, ClosingLimitOrder
 from .serializers import PositionListSerializer, LimitOrderListSerializer, \
-    CreatePositionSerializer, ListClosingLimitOrderSerializer
+    CreatePositionSerializer, ListClosingLimitOrderSerializer, \
+    RobotoPositionSerializer
 from channels.layers import get_channel_layer
 from datetime import datetime as dt
 
@@ -148,6 +149,17 @@ def close_pos(data):
         # el.delete()
 
 
+def liquid_pos(liquidated):
+    for (i, pos) in enumerate(Position.objects.filter(id__in=[i[0] for i in liquidated], is_active=True)):
+        pos.is_active = False
+        pos.closed = dt.now()
+        pos.save()
+        pnl = (-1 if pos.type_of_pos == "SHORT" else 1) * get_pnl(
+            pos.position_size, pos.open_price, liquidated[i][1])
+        update_history_pnl(pos, pos.owner, pos.position_size, pnl)
+        # print(pos, liquidated)
+
+
 class OrderConsumer(WebsocketConsumer):
     """private class for ROBOTO"""
     def get_chart(self):
@@ -160,6 +172,12 @@ class OrderConsumer(WebsocketConsumer):
         # serializer = OrderListSerializer()
         queryset = ClosingLimitOrder.objects.filter(is_active=True)
         data = ListClosingLimitOrderSerializer(queryset, many=True).data
+        return data
+
+    def get_positions(self):
+        # serializer = OrderListSerializer()
+        queryset = Position.objects.filter(is_active=True)
+        data = RobotoPositionSerializer(queryset, many=True).data
         return data
 
     def connect(self):
@@ -181,10 +199,13 @@ class OrderConsumer(WebsocketConsumer):
         message = text_data_json["message"]
         opened = message['open_pos']
         closed = message['close_pos']
+        liquidated = message['liquid_pos']
         if opened:
             open_pos(opened)
         if closed:
             close_pos(closed)
+        if liquidated:
+            liquid_pos(liquidated)
         # data = self.get_chart()
         # async_to_sync(self.channel_layer.group_send)(
         #     'roboto',
@@ -198,7 +219,8 @@ class OrderConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             "message": {
                 'opening_limits': self.get_chart(),
-                'closing_limits': self.get_closing_limits()
+                'closing_limits': self.get_closing_limits(),
+                'positions': self.get_positions()
             }
         }))
         #

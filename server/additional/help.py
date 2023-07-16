@@ -46,8 +46,9 @@ def update_history_pnl(position, user, position_size, pnl):
         new_pnl = HistoryPnl(
             owner=user,
             position=position,
-            position_size=position.position_size,
-            pnl=pnl
+            position_size=position_size,
+            pnl=pnl,
+            time=dt.now()
             # roe=get_roe(position_size, position.open_price,
             #             current_price, position.quantity_usdt)
         )
