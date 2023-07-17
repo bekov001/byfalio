@@ -169,21 +169,21 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'authorization.User'
 
 ASGI_APPLICATION = "server.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    },
-
-}
-
 # CHANNEL_LAYERS = {
 #     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
-#         },
+#         "BACKEND": "channels.layers.InMemoryChannelLayer"
 #     },
+#
 # }
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        },
+    },
+}
 
 CORS_ORIGIN_ALLOW_ALL = True
 

@@ -130,7 +130,7 @@ useWebSocket(socketUrl + "!markPrice@arr@1s/btcusdt@ticker/btcusdt@depth@500ms",
 
 
 
-    const { sendMessage} = useWebSocket("ws://byfalio.herokuapp.com" + "/ws/gays/", {
+    const { sendMessage} = useWebSocket("wss://byfalio.herokuapp.com" + "/ws/gays/", {
       onOpen: () => {
         
          

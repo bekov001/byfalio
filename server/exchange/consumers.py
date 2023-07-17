@@ -150,6 +150,7 @@ def close_pos(data):
 
 
 def liquid_pos(liquidated):
+    channel_layer = get_channel_layer()
     for (i, pos) in enumerate(Position.objects.filter(id__in=[i[0] for i in liquidated], is_active=True)):
         pos.is_active = False
         pos.closed = dt.now()
@@ -157,6 +158,9 @@ def liquid_pos(liquidated):
         pnl = (-1 if pos.type_of_pos == "SHORT" else 1) * get_pnl(
             pos.position_size, pos.open_price, liquidated[i][1])
         update_history_pnl(pos, pos.owner, pos.position_size, pnl)
+        async_to_sync(channel_layer.group_send)(str(el.owner_id),
+                                                {"type": "chat.message",
+                                                 "text": el.owner_id})
         # print(pos, liquidated)
 
 
